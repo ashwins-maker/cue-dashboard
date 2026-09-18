@@ -69,26 +69,36 @@ export default function NudgesPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/*
+          Outcome first. "Nudges shown" led this row before, which is a volume
+          figure a restraint-led product should never celebrate — speaking more
+          is not the goal, and a merchant reading it top-left learns nothing
+          about whether any of it worked.
+        */}
         <MetricCard
-          label="Nudges shown"
-          value={NUDGE_TOTALS.shown.toLocaleString()}
-          hint="Confirmed visible on screen, not merely rendered."
-        />
-        <MetricCard
-          label="Shoppers who engaged"
-          value={pct(NUDGE_TOTALS.engaged, NUDGE_TOTALS.shown)}
-          hint={`${NUDGE_TOTALS.engaged.toLocaleString()} expanded it or used its action.`}
-        />
-        <MetricCard
-          label="Stopped being stuck"
+          label="Settled the question"
           value={pct(totalResolved, NUDGE_TOTALS.shown)}
           emphasis
-          hint="The behaviour that triggered the nudge stopped afterwards."
+          hint={`In ${totalResolved.toLocaleString()} of ${NUDGE_TOTALS.shown.toLocaleString()} answers, the behaviour that triggered it stopped afterwards.`}
+        />
+        <MetricCard
+          label="Times Cue spoke"
+          value={NUDGE_TOTALS.shown.toLocaleString()}
+          hint="Confirmed visible on screen, not merely rendered into the page."
         />
         <MetricCard
           label="Times it stayed quiet"
-          value={SUPPRESSION_TOTAL.toLocaleString()}
-          hint="Cue could have spoken and chose not to. Every one is logged with a reason."
+          value={pct(
+            SUPPRESSION_TOTAL,
+            SUPPRESSION_TOTAL + NUDGE_TOTALS.shown,
+          )}
+          hint={`It held back ${SUPPRESSION_TOTAL.toLocaleString()} times. Every one is logged with a reason.`}
+        />
+        <MetricCard
+          label="Closed by the shopper"
+          value={pct(NUDGE_TOTALS.dismissed, NUDGE_TOTALS.shown)}
+          lowerIsBetter
+          hint={`${NUDGE_TOTALS.dismissed.toLocaleString()} were dismissed outright. Rising means Cue is interrupting.`}
         />
       </div>
 

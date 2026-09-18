@@ -1,28 +1,29 @@
 /**
  * Aggregates for the overview screen.
  *
- * Scope rule: a figure appears here only when `WIRING` marks its source wired.
- * Anything the backend cannot answer is left out of the summary entirely
- * rather than computed and then hidden in the UI — an unused field is an
- * invitation to render it later by accident.
+ * The summary is built around the product's own claim: demand for an answer
+ * should fall once that answer reaches the page. So every figure that can move
+ * over time carries its change against the previous period, and the two that
+ * cannot — coverage and restraint — are stated as shares rather than counts,
+ * since their raw totals mean nothing without a denominator.
  *
- * Deliberately absent, and why:
- *
- *   salesAtRisk   — `revenueAtRisk` is unwired: insight rows still have no
- *                   product dimension to multiply a shortfall against.
- *   trend         — `trend` is unwired: nothing compares consecutive periods.
- *   unmetDemand   — `topicCoverage` is unwired: four of the nine topics have
- *                   no card type behind them, so a catalog coverage figure for
- *                   fabric, colour, care or reviews would be invented.
- *   lowConfidence — unwired, so a thin answer cannot be told from a solid one.
- *                   Content state collapses to covered / not covered.
+ * Still collapsed, and why: content state has no confidence score behind it,
+ * so a thin answer cannot be told from a well-evidenced one. Everything is
+ * either covered or not.
  */
 
 import {
   type FrictionPoint,
+  revenueAtRisk,
   TOPIC_LABEL,
   type TopicKey,
 } from "./merchant-data";
+import {
+  type Change,
+  demandChange,
+  movement,
+  uncoveredChange,
+} from "./period";
 import {
   INTENT_PERFORMANCE,
   NUDGE_TOTALS,
@@ -51,6 +52,18 @@ export interface FunnelStep {
 export interface OverviewSummary {
   /** False when there is nothing to aggregate — an empty state, not zeros. */
   hasData: boolean;
+
+  /**
+   * Demand this period against the one before it. A fall is the product
+   * working: the answer reached the page and the question stopped being asked.
+   */
+  demand: Change | null;
+  /** The same, for the questions the store still cannot answer. */
+  uncoveredDemand: Change | null;
+  /** How many friction points fell, grew, or held steady. */
+  movement: { falling: number; rising: number; flat: number };
+  /** Revenue attached to the friction points the store cannot answer. */
+  revenueAtRisk: number;
 
   /** Sum of per-friction-point session counts. NOT a distinct shopper count. */
   stuckEncounters: number;
@@ -107,6 +120,11 @@ export function summariseOverview(points: FrictionPoint[]): OverviewSummary {
 
   return {
     hasData: points.length > 0,
+
+    demand: demandChange(points),
+    uncoveredDemand: uncoveredChange(points),
+    movement: movement(points),
+    revenueAtRisk: uncovered.reduce((sum, p) => sum + revenueAtRisk(p), 0),
 
     stuckEncounters: points.reduce((sum, p) => sum + p.sessions, 0),
     frictionPointCount: points.length,

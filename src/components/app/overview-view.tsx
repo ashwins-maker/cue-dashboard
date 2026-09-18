@@ -1,11 +1,15 @@
 import { MetricCard } from "@/components/base/metric-card";
 import { DotGrid, MiniBar } from "@/components/base/mini-viz";
 import { NudgeFunnel } from "@/components/app/overview-funnel";
-import { IntentChart } from "@/components/app/overview-intent-chart";
 import { SuppressionBreakdown } from "@/components/app/overview-suppression";
 import { TopicDemandChart } from "@/components/app/overview-topic-chart";
 import { TopFrictionPoints } from "@/components/app/overview-top-points";
-import { type FrictionPoint, METRIC_NOTES, STORE } from "@/lib/merchant-data";
+import {
+  formatCurrency,
+  type FrictionPoint,
+  METRIC_NOTES,
+  STORE,
+} from "@/lib/merchant-data";
 import {
   formatCount,
   formatShare,
@@ -26,7 +30,6 @@ import {
  */
 export function OverviewView({ points }: { points: FrictionPoint[] }) {
   const s = summariseOverview(points);
-  const answeredSessions = s.stuckEncounters - s.uncoveredSessions;
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,62 +56,88 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
       ) : (
         <>
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {/*
+              Demand first. The product's claim is that a question stops being
+              asked once its answer is on the page, so the total and its
+              direction are the only figures that can show the product working
+              at all. Everything after this explains it.
+            */}
             <MetricCard
-              label="Questions Cue settled"
-              value={formatCount(s.resolved)}
+              label="Questions shoppers asked"
+              value={formatCount(s.stuckEncounters)}
               emphasis
-              change={{
-                value: `${formatShare(s.resolvedShare)} of what it said`,
-                direction: "up",
+              lowerIsBetter
+              change={
+                s.demand
+                  ? { value: s.demand.value, direction: s.demand.direction }
+                  : undefined
+              }
+              info={{
+                label: METRIC_NOTES.sessions.label,
+                body: METRIC_NOTES.sessions.body,
               }}
+              visual={
+                <MiniBar
+                  segments={[
+                    {
+                      value: s.movement.falling,
+                      className: "bg-[var(--chart-positive)]",
+                      label: `${s.movement.falling} asked less often`,
+                    },
+                    {
+                      value: s.movement.flat,
+                      className: "bg-[var(--chart-track)]",
+                      label: `${s.movement.flat} unchanged`,
+                    },
+                    {
+                      value: s.movement.rising,
+                      className: "bg-[var(--chart-negative)]",
+                      label: `${s.movement.rising} asked more often`,
+                    },
+                  ]}
+                />
+              }
+              hint={`${s.movement.falling} of ${s.frictionPointCount} questions are being asked less than last period. Falling is the goal.`}
+            />
+
+            <MetricCard
+              label="Answered on the spot"
+              value={formatShare(s.resolvedShare)}
               visual={
                 <MiniBar
                   segments={[
                     {
                       value: s.resolved,
                       className: "bg-[var(--chart-positive)]",
-                      label: "Settled",
+                      label: "Hesitation ended",
                     },
                     {
                       value: Math.max(0, s.nudgesShown - s.resolved),
                       className: "bg-[var(--chart-track)]",
-                      label: "Not settled",
+                      label: "Still hesitating",
                     },
                   ]}
                 />
               }
-              hint="The shopper stopped flipping sizes, reopening the size chart, or hunting for the returns policy."
+              hint={`Cue answered ${formatCount(s.nudgesShown)} times. In ${formatCount(s.resolved)} of them the shopper stopped flipping sizes, reopening the size chart, or hunting for the returns policy.`}
             />
+
             <MetricCard
-              label="Shoppers Cue could not help"
-              value={formatCount(s.uncoveredSessions)}
+              label="Nothing on the page to answer with"
+              value={formatCurrency(s.revenueAtRisk)}
               lowerIsBetter
-              visual={
-                <MiniBar
-                  segments={[
-                    {
-                      value: s.uncoveredSessions,
-                      className: "bg-[var(--chart-negative)]",
-                      label: "Nothing on the page",
-                    },
-                    {
-                      value: answeredSessions,
-                      className: "bg-[var(--chart-track)]",
-                      label: "Your pages had the answer",
-                    },
-                  ]}
-                />
+              change={
+                s.uncoveredDemand
+                  ? {
+                      value: s.uncoveredDemand.value,
+                      direction: s.uncoveredDemand.direction,
+                    }
+                  : undefined
               }
               info={{
-                label: METRIC_NOTES.sessions.label,
-                body: METRIC_NOTES.sessions.body,
+                label: METRIC_NOTES.revenueAtRisk.label,
+                body: METRIC_NOTES.revenueAtRisk.body,
               }}
-              hint={`Of ${formatCount(s.stuckEncounters)} times a shopper got stuck, these found nothing on the page.`}
-            />
-            <MetricCard
-              label="Gaps in your pages"
-              value={formatCount(s.uncoveredCount)}
-              lowerIsBetter
               visual={
                 <DotGrid
                   total={s.frictionPointCount}
@@ -116,11 +145,17 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
                   label={`${s.uncoveredCount} of ${s.frictionPointCount} friction points have no answer on the page.`}
                 />
               }
-              hint={`${s.uncoveredCount} of ${s.frictionPointCount} things shoppers ask about have nothing in your store to answer them.`}
+              hint={`${formatCount(s.uncoveredSessions)} shoppers hit ${s.uncoveredCount} questions your store cannot answer. This is the work list.`}
             />
+
             <MetricCard
-              label="Times Cue stayed quiet"
-              value={formatCount(s.suppressed)}
+              label="Cue stayed quiet"
+              value={formatShare(s.quietShare)}
+              info={{
+                label: METRIC_NOTES.holdout.label,
+                body: METRIC_NOTES.holdout.body,
+                align: "right",
+              }}
               visual={
                 <MiniBar
                   segments={[
@@ -137,16 +172,21 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
                   ]}
                 />
               }
-              hint={`${formatShare(s.quietShare)} of the moments it could have spoken. It spoke ${formatCount(s.nudgesShown)} times.`}
+              hint={`Of the moments it could have spoken, it held back ${formatCount(s.suppressed)} times. Silence is the default.`}
             />
           </section>
 
-          <IntentChart rows={s.intentPerformance} />
+          {/*
+            The work list sits directly under the figures, not at the foot of
+            the page. Everything above says how the store is doing; this is the
+            only part a merchant can act on, so it comes before the breakdowns
+            that explain it.
+          */}
+          <TopFrictionPoints points={s.topPoints} />
+
+          <TopicDemandChart rows={s.topicDemand} />
 
           <section className="grid gap-4 lg:grid-cols-5">
-            <div className="lg:col-span-3">
-              <TopicDemandChart rows={s.topicDemand} />
-            </div>
             <div className="lg:col-span-2">
               <NudgeFunnel
                 steps={s.funnel}
@@ -155,15 +195,14 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
                 resolvedShare={s.resolvedShare}
               />
             </div>
+            <div className="lg:col-span-3">
+              <SuppressionBreakdown
+                reasons={s.suppression}
+                total={s.suppressed}
+                quietShare={s.quietShare}
+              />
+            </div>
           </section>
-
-          <SuppressionBreakdown
-            reasons={s.suppression}
-            total={s.suppressed}
-            quietShare={s.quietShare}
-          />
-
-          <TopFrictionPoints points={s.topPoints} />
         </>
       )}
     </div>

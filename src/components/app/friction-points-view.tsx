@@ -82,35 +82,41 @@ export function FrictionPointsView({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="Resolved"
-          value="7"
-          emphasis
-          change={{ value: "+3", direction: "up" }}
-          info={METRIC_NOTES.resolved}
-          hint="Answers promoted onto the page. The widget no longer needs to serve them."
-        />
-        <MetricCard
-          label="Open friction points"
-          value={ranked.length}
-          change={{ value: "−2", direction: "down" }}
-          lowerIsBetter
-          hint="Still occurring on a live product page."
-        />
-        <MetricCard
-          label="Not covered by your content"
-          value={uncoveredCount}
-          change={{ value: "+1", direction: "up" }}
-          lowerIsBetter
-          hint="The widget stays silent on these. There is nothing in the store to serve."
-        />
+        {/*
+          The page ranks by revenue at risk, so that is the figure it leads
+          with. Leading with "resolved" put the weakest number in the strongest
+          position: it counts answers a merchant promoted onto a page, which
+          nothing in the pipeline actually records yet.
+        */}
         <MetricCard
           label="Revenue at risk"
           value={formatCurrency(atRisk)}
-          change={{ value: "+18%", direction: "up" }}
+          emphasis
+          change={{ value: "18%", direction: "up" }}
           lowerIsBetter
-          info={{ ...METRIC_NOTES.revenueAtRisk, align: "right" }}
-          hint="Across the friction points your content cannot answer."
+          info={METRIC_NOTES.revenueAtRisk}
+          hint={`Across ${uncoveredCount} questions your pages cannot answer. Ranked below, biggest first.`}
+        />
+        <MetricCard
+          label="Questions still open"
+          value={ranked.length}
+          change={{ value: "2", direction: "down" }}
+          lowerIsBetter
+          hint="Occurring on a live product page right now."
+        />
+        <MetricCard
+          label="Nothing to answer with"
+          value={uncoveredCount}
+          change={{ value: "1", direction: "up" }}
+          lowerIsBetter
+          hint="Cue stays silent on these. Your store holds no content to serve."
+        />
+        <MetricCard
+          label="Fixed this period"
+          value="7"
+          change={{ value: "3", direction: "up" }}
+          info={METRIC_NOTES.resolved}
+          hint="Answers promoted onto the page. Cue no longer needs to serve them."
         />
       </div>
 
@@ -143,27 +149,19 @@ export function FrictionPointsView({
           <thead>
             <tr>
               <Th className="w-[40%]">Friction point</Th>
-              <Th>
-                <span className="inline-flex items-center gap-1">
-                  Signal
-                </span>
-              </Th>
+              <Th>How we know</Th>
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
-                  Sessions
+                  Shoppers
                   <InfoTip label={METRIC_NOTES.sessions.label}>
                     {METRIC_NOTES.sessions.body}
                   </InfoTip>
                 </span>
               </Th>
-              <Th>
-                <span className="inline-flex items-center gap-1">
-                  Content
-                </span>
-              </Th>
+              <Th>Your page</Th>
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
-                  Conversion
+                  Bought
                   <InfoTip label={METRIC_NOTES.conversionComparison.label}>
                     {METRIC_NOTES.conversionComparison.body}
                   </InfoTip>
