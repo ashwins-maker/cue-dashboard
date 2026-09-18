@@ -45,7 +45,7 @@ export function NudgeFunnel({
         description="Every card Cue showed, and how far each one got."
       />
 
-      <div className="flex flex-1 flex-wrap items-start gap-x-6 gap-y-4 px-5 py-5">
+      <div className="flex flex-1 flex-wrap items-start gap-x-5 gap-y-4 px-5 py-5">
         <svg
           width={W}
           height={height}
@@ -92,38 +92,51 @@ export function NudgeFunnel({
           })}
         </svg>
 
-        <ol className="min-w-[180px] flex-1">
+        {/*
+          The label column mirrors the SVG's geometry exactly rather than
+          approximating it: one block per band at BAND_H, one per gap at GAP,
+          and the same PAD_Y offset at the top. Laying the two out
+          independently is what let the labels drift off their bands.
+        */}
+        <ol
+          className="min-w-[170px] flex-1"
+          style={{ paddingTop: PAD_Y, paddingBottom: PAD_Y }}
+        >
           {steps.map((step, index) => {
             const previous = index > 0 ? steps[index - 1] : null;
             const lost = previous ? previous.value - step.value : 0;
 
             return (
-              <li
-                key={step.key}
-                style={{ height: BAND_H + (index > 0 ? GAP : 0) }}
-                className="flex flex-col justify-center"
-              >
+              <li key={step.key}>
                 {previous && (
-                  <p className="text-[11px] text-quaternary tabular-nums">
+                  <p
+                    style={{ height: GAP }}
+                    className="flex items-center text-[11px] text-quaternary tabular-nums"
+                  >
                     ↓ {formatCount(lost)} dropped off
                   </p>
                 )}
-                <p className="mt-0.5 text-[13px] text-secondary">
-                  {step.label}
-                </p>
-                <p className="text-[15px] leading-tight font-semibold text-primary tabular-nums">
-                  {formatCount(step.value)}
-                  <span className="ml-2 text-[12px] font-normal text-tertiary">
-                    {formatShare(step.share)}
-                  </span>
-                </p>
+                <div
+                  style={{ height: BAND_H }}
+                  className="flex flex-col justify-center"
+                >
+                  <p className="text-[12px] leading-tight text-tertiary">
+                    {step.label}
+                  </p>
+                  <p className="mt-0.5 text-[16px] leading-none font-semibold text-primary tabular-nums">
+                    {formatCount(step.value)}
+                    <span className="ml-2 text-[12px] font-normal text-tertiary">
+                      {formatShare(step.share)}
+                    </span>
+                  </p>
+                </div>
               </li>
             );
           })}
         </ol>
       </div>
 
-      <footer className="grid grid-cols-2 gap-px border-t border-secondary bg-[var(--border-secondary)]">
+      <footer className="mt-auto grid grid-cols-2 gap-px border-t border-secondary bg-[var(--border-secondary)]">
         <div className="bg-secondary px-5 py-3">
           <p className="flex items-center gap-1.5 text-[11px] text-tertiary">
             Settled afterwards

@@ -26,6 +26,8 @@ import {
 import { formatCurrency, METRIC_NOTES, STORE } from "@/lib/merchant-data";
 
 type Filter = "all" | "resolved" | "unresolved";
+/** The two ways of reading the same firings: grouped by question, or one by one. */
+type View = "questions" | "recent";
 
 function pct(part: number, whole: number): string {
   if (whole === 0) return "—";
@@ -33,6 +35,7 @@ function pct(part: number, whole: number): string {
 }
 
 export default function NudgesPage() {
+  const [view, setView] = useState<View>("questions");
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedIntent, setSelectedIntent] = useState<IntentKey | null>(null);
@@ -89,10 +92,7 @@ export default function NudgesPage() {
         />
         <MetricCard
           label="How often Cue held back"
-          value={pct(
-            SUPPRESSION_TOTAL,
-            SUPPRESSION_TOTAL + NUDGE_TOTALS.shown,
-          )}
+          value={pct(SUPPRESSION_TOTAL, SUPPRESSION_TOTAL + NUDGE_TOTALS.shown)}
           hint={`It held back ${SUPPRESSION_TOTAL.toLocaleString()} times. Every one is logged with a reason.`}
         />
         <MetricCard
@@ -116,210 +116,228 @@ export default function NudgesPage() {
       */}
       <Card>
         <CardHeader
-          title="What Cue answers"
-          description="Six kinds of question, ranked by what settling them is worth. The ones near the bottom are the ones to reconsider."
-        />
-        <Table>
-          <thead>
-            <tr>
-              <Th className="w-[38%]">Question</Th>
-              <Th className="text-right">
-                <span className="inline-flex items-center gap-1.5">
-                  Worth settling
-                  <InfoTip
-                    label={METRIC_NOTES.intentWorth.label}
-                    align="right"
-                  >
-                    {METRIC_NOTES.intentWorth.body}
-                  </InfoTip>
-                </span>
-              </Th>
-              <Th className="text-right">Shown</Th>
-              <Th className="text-right">Settled it</Th>
-              <Th className="text-right">Left unsettled</Th>
-              <Th className="w-10" />
-            </tr>
-          </thead>
-          <tbody>
-            {INTENTS_BY_WORTH.map((perf) => {
-              const intent = INTENTS[perf.intent];
-              const settledShare =
-                perf.shown === 0 ? 0 : perf.resolved / perf.shown;
-              const unsettled = leftUnsettled(perf);
-
-              return (
-                <Tr
-                  key={perf.intent}
-                  onClick={() => setSelectedIntent(perf.intent)}
-                  selected={perf.intent === selectedIntent}
-                >
-                  <Td>
-                    <p className="text-[13px] font-medium text-primary">
-                      {intent.question}
-                    </p>
-                    <p className="mt-1 text-[11px] leading-relaxed text-tertiary">
-                      {intent.behaviour}
-                    </p>
-                  </Td>
-                  <Td className="text-right align-middle font-medium text-primary tabular-nums">
-                    {formatCurrency(perf.worth)}
-                  </Td>
-                  <Td className="text-right align-middle text-secondary tabular-nums">
-                    {perf.shown === 0 ? "—" : perf.shown.toLocaleString()}
-                  </Td>
-                  <Td className="align-middle">
-                    {perf.shown === 0 ? (
-                      <p className="text-right text-quaternary">—</p>
-                    ) : (
-                      <>
-                        <p
-                          className={cx(
-                            "text-right font-medium tabular-nums",
-                            settledShare > 0.5
-                              ? "text-success-primary"
-                              : "text-error-primary",
-                          )}
-                        >
-                          {pct(perf.resolved, perf.shown)}
-                        </p>
-                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-quaternary">
-                          <div
-                            className={cx(
-                              "h-full rounded-full",
-                              settledShare > 0.5
-                                ? "bg-success-500"
-                                : "bg-error-500",
-                            )}
-                            style={{ width: `${settledShare * 100}%` }}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </Td>
-                  <Td className="text-right align-middle">
-                    <p className="font-medium text-primary tabular-nums">
-                      {unsettled === 0 ? "—" : unsettled.toLocaleString()}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-quaternary">
-                      still hesitating
-                    </p>
-                  </Td>
-                  <Td className="text-right align-middle">
-                    <ChevronRight
-                      className="inline size-4 text-quaternary"
-                      strokeWidth={2}
-                      aria-hidden
-                    />
-                  </Td>
-                </Tr>
-              );
-            })}
-          </tbody>
-        </Table>
-      </Card>
-
-      {/* Live feed */}
-      <Card>
-        <CardHeader
-          title="Recent nudges"
-          description={`${rows.length} of ${FIRINGS.length} shown · select one to see why it fired`}
+          title={view === "questions" ? "What Cue answers" : "Recent nudges"}
+          description={
+            view === "questions"
+              ? "Six kinds of question, ranked by what settling them is worth. The ones near the bottom are the ones to reconsider."
+              : `${rows.length} of ${FIRINGS.length} shown · select one to see why it fired`
+          }
           actions={
-            <ButtonGroup<Filter>
-              value={filter}
-              onChange={setFilter}
-              options={[
-                { value: "all", label: "All", count: FIRINGS.length },
-                {
-                  value: "resolved",
-                  label: "Worked",
-                  count: resolvedCount,
-                },
-                {
-                  value: "unresolved",
-                  label: "Didn't",
-                  count: FIRINGS.length - resolvedCount,
-                },
-              ]}
-            />
+            <div className="flex items-center gap-5">
+              <ButtonGroup<View>
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "questions", label: "By question", count: 6 },
+                  {
+                    value: "recent",
+                    label: "Every nudge",
+                    count: FIRINGS.length,
+                  },
+                ]}
+              />
+              {view === "recent" && (
+                <div className="border-l border-secondary pl-5">
+                  <ButtonGroup<Filter>
+                    value={filter}
+                    onChange={setFilter}
+                    options={[
+                      { value: "all", label: "All", count: FIRINGS.length },
+                      {
+                        value: "resolved",
+                        label: "Worked",
+                        count: resolvedCount,
+                      },
+                      {
+                        value: "unresolved",
+                        label: "Didn't",
+                        count: FIRINGS.length - resolvedCount,
+                      },
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
           }
         />
-        <Table>
-          <thead>
-            <tr>
-              <Th className="w-[38%]">What it said</Th>
-              <Th>Intent</Th>
-              <Th>Set off by</Th>
-              <Th className="text-right">Visible</Th>
-              <Th>Outcome</Th>
-              <Th className="w-10" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((firing) => {
-              const intent = INTENTS[firing.intent];
-              const { state } = resolutionOf(firing);
-              const good = state === "resolved";
-              const pending = state === "pending";
-
-              return (
-                <Tr
-                  key={firing.id}
-                  onClick={() => setSelectedId(firing.id)}
-                  selected={firing.id === selectedId}
-                >
-                  <Td className="align-middle">
-                    <p className="text-[13px] text-primary">
-                      {firing.contentText}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-tertiary">
-                      {firing.productTitle}
-                      <span className="text-quaternary">
-                        · {firing.shownAt}
-                      </span>
-                    </p>
-                  </Td>
-                  <Td className="align-middle">
-                    <Badge color="brand">{intent.label}</Badge>
-                  </Td>
-                  <Td className="align-middle">
-                    <code className="font-mono text-[11px] text-tertiary">
-                      {firing.triggeringSignals[0]}
-                    </code>
-                    {firing.triggeringSignals.length > 1 && (
-                      <span className="ml-1 text-[11px] text-quaternary">
-                        +{firing.triggeringSignals.length - 1}
-                      </span>
-                    )}
-                  </Td>
-                  <Td className="text-right align-middle text-secondary tabular-nums">
-                    {firing.outcome.timeVisibleMs === undefined
-                      ? "—"
-                      : `${(firing.outcome.timeVisibleMs / 1000).toFixed(1)}s`}
-                  </Td>
-                  <Td className="align-middle">
-                    <Badge
-                      color={pending ? "gray" : good ? "success" : "error"}
-                      dot
+        {view === "questions" && (
+          <Table>
+            <thead>
+              <tr>
+                <Th className="w-[38%]">Question</Th>
+                <Th className="text-right">
+                  <span className="inline-flex items-center gap-1.5">
+                    Worth settling
+                    <InfoTip
+                      label={METRIC_NOTES.intentWorth.label}
+                      align="right"
                     >
-                      {pending
-                        ? "Measuring"
-                        : good
-                          ? "Stopped being stuck"
-                          : "Still stuck"}
-                    </Badge>
-                  </Td>
-                  <Td className="text-right align-middle">
-                    <ChevronRight
-                      className="inline size-4 text-quaternary"
-                      strokeWidth={2}
-                      aria-hidden
-                    />
-                  </Td>
-                </Tr>
-              );
-            })}
-          </tbody>
-        </Table>
+                      {METRIC_NOTES.intentWorth.body}
+                    </InfoTip>
+                  </span>
+                </Th>
+                <Th className="text-right">Shown</Th>
+                <Th className="text-right">Settled it</Th>
+                <Th className="text-right">Left unsettled</Th>
+                <Th className="w-10" />
+              </tr>
+            </thead>
+            <tbody>
+              {INTENTS_BY_WORTH.map((perf) => {
+                const intent = INTENTS[perf.intent];
+                const settledShare =
+                  perf.shown === 0 ? 0 : perf.resolved / perf.shown;
+                const unsettled = leftUnsettled(perf);
+
+                return (
+                  <Tr
+                    key={perf.intent}
+                    onClick={() => setSelectedIntent(perf.intent)}
+                    selected={perf.intent === selectedIntent}
+                  >
+                    <Td>
+                      <p className="text-[13px] font-medium text-primary">
+                        {intent.question}
+                      </p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-tertiary">
+                        {intent.behaviour}
+                      </p>
+                    </Td>
+                    <Td className="text-right align-middle font-medium text-primary tabular-nums">
+                      {formatCurrency(perf.worth)}
+                    </Td>
+                    <Td className="text-right align-middle text-secondary tabular-nums">
+                      {perf.shown === 0 ? "—" : perf.shown.toLocaleString()}
+                    </Td>
+                    <Td className="align-middle">
+                      {perf.shown === 0 ? (
+                        <p className="text-right text-quaternary">—</p>
+                      ) : (
+                        <>
+                          <p
+                            className={cx(
+                              "text-right font-medium tabular-nums",
+                              settledShare > 0.5
+                                ? "text-success-primary"
+                                : "text-error-primary",
+                            )}
+                          >
+                            {pct(perf.resolved, perf.shown)}
+                          </p>
+                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-quaternary">
+                            <div
+                              className={cx(
+                                "h-full rounded-full",
+                                settledShare > 0.5
+                                  ? "bg-success-500"
+                                  : "bg-error-500",
+                              )}
+                              style={{ width: `${settledShare * 100}%` }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </Td>
+                    <Td className="text-right align-middle">
+                      <p className="font-medium text-primary tabular-nums">
+                        {unsettled === 0 ? "—" : unsettled.toLocaleString()}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-quaternary">
+                        still hesitating
+                      </p>
+                    </Td>
+                    <Td className="text-right align-middle">
+                      <ChevronRight
+                        className="inline size-4 text-quaternary"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
+        {view === "recent" && (
+          <Table>
+            <thead>
+              <tr>
+                <Th className="w-[38%]">What it said</Th>
+                <Th>Intent</Th>
+                <Th>Set off by</Th>
+                <Th className="text-right">Visible</Th>
+                <Th>Outcome</Th>
+                <Th className="w-10" />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((firing) => {
+                const intent = INTENTS[firing.intent];
+                const { state } = resolutionOf(firing);
+                const good = state === "resolved";
+                const pending = state === "pending";
+
+                return (
+                  <Tr
+                    key={firing.id}
+                    onClick={() => setSelectedId(firing.id)}
+                    selected={firing.id === selectedId}
+                  >
+                    <Td className="align-middle">
+                      <p className="text-[13px] text-primary">
+                        {firing.contentText}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-tertiary">
+                        {firing.productTitle}
+                        <span className="text-quaternary">
+                          · {firing.shownAt}
+                        </span>
+                      </p>
+                    </Td>
+                    <Td className="align-middle">
+                      <Badge color="brand">{intent.label}</Badge>
+                    </Td>
+                    <Td className="align-middle">
+                      <code className="font-mono text-[11px] text-tertiary">
+                        {firing.triggeringSignals[0]}
+                      </code>
+                      {firing.triggeringSignals.length > 1 && (
+                        <span className="ml-1 text-[11px] text-quaternary">
+                          +{firing.triggeringSignals.length - 1}
+                        </span>
+                      )}
+                    </Td>
+                    <Td className="text-right align-middle text-secondary tabular-nums">
+                      {firing.outcome.timeVisibleMs === undefined
+                        ? "—"
+                        : `${(firing.outcome.timeVisibleMs / 1000).toFixed(1)}s`}
+                    </Td>
+                    <Td className="align-middle">
+                      <Badge
+                        color={pending ? "gray" : good ? "success" : "error"}
+                        dot
+                      >
+                        {pending
+                          ? "Measuring"
+                          : good
+                            ? "Stopped being stuck"
+                            : "Still stuck"}
+                      </Badge>
+                    </Td>
+                    <Td className="text-right align-middle">
+                      <ChevronRight
+                        className="inline size-4 text-quaternary"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
       </Card>
 
       {/* Restraint */}

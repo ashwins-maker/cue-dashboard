@@ -98,6 +98,8 @@ export const STORE = {
   tracking: "active" as const,
   lastEvent: "12 seconds ago",
   consentDeniedShare: 0.18,
+  /** Visits Cue could observe in the period — the denominator for how often it interrupts. */
+  sessionsObserved: 48200,
 };
 
 /**

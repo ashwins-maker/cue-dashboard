@@ -54,7 +54,7 @@ export function SuppressionBreakdown({
   }));
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex h-full flex-col">
       <CardHeader
         title="When Cue stayed quiet"
         description={`Held back ${formatShare(quietShare)} of the moments it could have spoken. Silence is the default.`}
@@ -121,7 +121,7 @@ export function SuppressionBreakdown({
         </ul>
       </div>
 
-      <footer className="border-t border-secondary px-5 py-3">
+      <footer className="mt-auto border-t border-secondary px-5 py-3">
         <p className="text-[11px] text-tertiary">
           A card appears only when a rule fires and no silence rule vetoes it.
         </p>

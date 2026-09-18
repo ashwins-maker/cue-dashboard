@@ -585,6 +585,13 @@ export interface SuppressionReason {
 
 export const SUPPRESSION_REASONS: SuppressionReason[] = [
   {
+    rule: "no_content_available",
+    label: "Your store had no answer",
+    explanation:
+      "Cue wanted to speak and your pages held nothing to say. The only reason on this list you can fix.",
+    count: 1094,
+  },
+  {
     rule: "below_threshold",
     label: "Not confident enough",
     explanation: "Signals fired, but not strongly enough to be sure what was wanted.",

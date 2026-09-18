@@ -1,5 +1,7 @@
 import {
+  BookOpen,
   CircleDollarSign,
+  Eye,
   MessageCircleQuestion,
   TriangleAlert,
 } from "lucide-react";
@@ -126,6 +128,34 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
                 align: "right",
               }}
               hint={`${formatShare(s.resolvedShare)} were answered on the spot. ${s.movement.falling} of ${s.frictionPointCount} questions are being asked less than last period — falling is the goal.`}
+            />
+
+            {/*
+              Coverage and interruption rate are the two figures a merchant
+              needs that no money number carries: whether the catalog is ready,
+              and whether Cue is being a nuisance while it gets there.
+            */}
+            <MetricCard
+              label="Questions your store can answer"
+              icon={BookOpen}
+              value={formatShare(s.answerCoverage)}
+              info={{
+                label: "Counted how",
+                body: "Of the moments Cue judged that a shopper needed an answer, the share where your store held content to give. The remainder are the only silences you can do anything about — every other reason Cue stays quiet is a decision it made on purpose.",
+              }}
+              hint={`${formatCount(s.noContentMoments)} times Cue wanted to speak and found nothing on the page. Add content and this rises.`}
+            />
+
+            <MetricCard
+              label="How often a shopper sees Cue"
+              icon={Eye}
+              value={`1 in ${Math.round(s.visitsPerNudge)}`}
+              info={{
+                label: "Counted how",
+                body: "Nudges shown against visits Cue could observe. A restraint-led widget should sit well below one in two — this is the number that says whether it is being a nuisance, which a share of internal decisions cannot.",
+                align: "right",
+              }}
+              hint={`${formatCount(s.nudgesShown)} cards across ${formatCount(s.sessionsObserved)} visits. Most shoppers never see Cue at all.`}
             />
           </section>
 

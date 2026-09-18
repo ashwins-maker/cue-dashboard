@@ -14,6 +14,7 @@
 
 import {
   type FrictionPoint,
+  STORE,
   revenueAtRisk,
   TOPIC_LABEL,
   type TopicKey,
@@ -64,6 +65,20 @@ export interface OverviewSummary {
   movement: { falling: number; rising: number; flat: number };
   /** Revenue attached to the friction points the store cannot answer. */
   revenueAtRisk: number;
+
+  /**
+   * Of the moments Cue decided a shopper needed an answer, the share where the
+   * store actually held one. The health figure for a content-led product: it
+   * rises when a merchant does the work the dashboard asks of them, and it is
+   * the only suppression reason they can act on.
+   */
+  answerCoverage: number;
+  /** Moments Cue wanted to speak but the store held nothing to say. */
+  noContentMoments: number;
+
+  /** Visits per nudge shown. Higher means Cue interrupts less often. */
+  visitsPerNudge: number;
+  sessionsObserved: number;
 
   /** Sum of per-friction-point session counts. NOT a distinct shopper count. */
   stuckEncounters: number;
@@ -118,8 +133,22 @@ export function summariseOverview(points: FrictionPoint[]): OverviewSummary {
   const resolved = INTENT_PERFORMANCE.reduce((sum, r) => sum + r.resolved, 0);
   const uncovered = points.filter((p) => p.contentState === "uncovered");
 
+  const noContentMoments =
+    SUPPRESSION_REASONS.find((r) => r.rule === "no_content_available")?.count ??
+    0;
+  // Candidates are the moments a rule matched and restraint approved a card —
+  // shown, plus the ones that died for want of content. Suppressions for any
+  // other reason are not coverage failures: Cue had an answer and chose,
+  // correctly, to keep it to itself.
+  const answerable = shown + noContentMoments;
+
   return {
     hasData: points.length > 0,
+
+    answerCoverage: answerable > 0 ? shown / answerable : 0,
+    noContentMoments,
+    visitsPerNudge: shown > 0 ? STORE.sessionsObserved / shown : 0,
+    sessionsObserved: STORE.sessionsObserved,
 
     demand: demandChange(points),
     uncoveredDemand: uncoveredChange(points),
