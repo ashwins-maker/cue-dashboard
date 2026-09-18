@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { CloseButton, Drawer, Section } from "@/components/app/nudge-panel";
 import { Badge } from "@/components/base/badge";
-import { NotWired } from "@/components/base/not-wired";
 import {
   FIRINGS,
   type Intent,
@@ -199,7 +198,6 @@ export function IntentPanel({
         <span className="text-[11px] text-quaternary">
           Intent is a dashboard grouping
         </span>
-        <NotWired field="signalSource" />
         <span className="ml-auto text-[11px] text-quaternary">
           {intent.rules.length} rule
           {intent.rules.length === 1 ? "" : "s"}

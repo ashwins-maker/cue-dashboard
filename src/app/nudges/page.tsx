@@ -8,7 +8,6 @@ import { Badge } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
 import { MetricCard } from "@/components/base/metric-card";
-import { NotWired } from "@/components/base/not-wired";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { cx } from "@/lib/cx";
 import {
@@ -253,7 +252,6 @@ export default function NudgesPage() {
                     </p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-tertiary">
                       {firing.productTitle}
-                      <NotWired field="product" />
                       <span className="text-quaternary">
                         · {firing.shownAt}
                       </span>

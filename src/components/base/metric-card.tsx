@@ -1,8 +1,6 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
 import type { ReactNode } from "react";
 import { InfoTip } from "@/components/base/info-tip";
-import { NotWired } from "@/components/base/not-wired";
-import type { WiringKey } from "@/lib/wiring";
 import { cx } from "@/lib/cx";
 
 export function MetricCard({
@@ -11,7 +9,6 @@ export function MetricCard({
   hint,
   visual,
   info,
-  notWired,
   change,
   /**
    * Set when a falling number is the good outcome — retired questions, open
@@ -28,7 +25,6 @@ export function MetricCard({
   /** Present when the figure is modelled, lagging, or correlational. */
   info?: { label: string; body: string; align?: "left" | "right" };
   /** Marks the figure as placeholder. Renders nothing once the field is wired. */
-  notWired?: WiringKey;
   change?: { value: string; direction: "up" | "down" };
   lowerIsBetter?: boolean;
   emphasis?: boolean;
@@ -52,7 +48,6 @@ export function MetricCard({
     >
       <p className="flex items-center gap-1.5 text-xs font-medium text-tertiary">
         {label}
-        {notWired && <NotWired field={notWired} />}
         {info && (
           <InfoTip label={info.label} align={info.align ?? "left"}>
             {info.body}

@@ -10,8 +10,6 @@
 // straight to a card_type. The mapping below is what turns five card types back
 // into the six intents the product is actually described in.
 
-import type { WiringKey } from "./wiring";
-
 /** The five card types the backend generates. Nothing else can be served. */
 export type CardType =
   | "size_guide"
@@ -629,9 +627,3 @@ export const NUDGE_TOTALS = {
   dismissed: 972,
 };
 
-/** Which figures on this page are placeholder. Keys match src/lib/wiring.ts. */
-export const NUDGE_WIRING: Record<string, WiringKey> = {
-  product: "product",
-  trend: "trend",
-  intentRollup: "signalSource",
-};

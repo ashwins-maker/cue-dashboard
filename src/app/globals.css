@@ -80,8 +80,6 @@
   --bg-brand-solid-hover: var(--brand-500);
   --bg-error-primary: var(--error-500);
   --bg-error-solid: var(--error-600);
-  /* Soft ring behind the not-wired dot so it reads on any surface. */
-  --bg-error-halo: rgb(240 68 56 / 0.22);
   --bg-warning-primary: var(--warning-500);
   --bg-success-primary: var(--success-500);
 

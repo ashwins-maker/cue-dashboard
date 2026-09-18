@@ -9,7 +9,6 @@ import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
 import { InfoTip } from "@/components/base/info-tip";
 import { MetricCard } from "@/components/base/metric-card";
-import { NotWired } from "@/components/base/not-wired";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import {
   CONTENT_LABEL,
@@ -87,7 +86,6 @@ export function FrictionPointsView({
           label="Resolved"
           value="7"
           emphasis
-          notWired="resolved"
           change={{ value: "+3", direction: "up" }}
           info={METRIC_NOTES.resolved}
           hint="Answers promoted onto the page. The widget no longer needs to serve them."
@@ -95,7 +93,6 @@ export function FrictionPointsView({
         <MetricCard
           label="Open friction points"
           value={ranked.length}
-          notWired="trend"
           change={{ value: "−2", direction: "down" }}
           lowerIsBetter
           hint="Still occurring on a live product page."
@@ -103,7 +100,6 @@ export function FrictionPointsView({
         <MetricCard
           label="Not covered by your content"
           value={uncoveredCount}
-          notWired="uncovered"
           change={{ value: "+1", direction: "up" }}
           lowerIsBetter
           hint="The widget stays silent on these. There is nothing in the store to serve."
@@ -111,7 +107,6 @@ export function FrictionPointsView({
         <MetricCard
           label="Revenue at risk"
           value={formatCurrency(atRisk)}
-          notWired="revenueAtRisk"
           change={{ value: "+18%", direction: "up" }}
           lowerIsBetter
           info={{ ...METRIC_NOTES.revenueAtRisk, align: "right" }}
@@ -151,7 +146,6 @@ export function FrictionPointsView({
               <Th>
                 <span className="inline-flex items-center gap-1">
                   Signal
-                  <NotWired field="signalSource" />
                 </span>
               </Th>
               <Th className="text-right">
@@ -165,13 +159,11 @@ export function FrictionPointsView({
               <Th>
                 <span className="inline-flex items-center gap-1">
                   Content
-                  <NotWired field="uncovered" />
                 </span>
               </Th>
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
                   Conversion
-                  <NotWired field="conversion" />
                   <InfoTip label={METRIC_NOTES.conversionComparison.label}>
                     {METRIC_NOTES.conversionComparison.body}
                   </InfoTip>
@@ -180,7 +172,6 @@ export function FrictionPointsView({
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
                   Returns
-                  <NotWired field="returnRate" align="right" />
                   <InfoTip label={METRIC_NOTES.returnRate.label} align="right">
                     {METRIC_NOTES.returnRate.body}
                   </InfoTip>
@@ -189,7 +180,6 @@ export function FrictionPointsView({
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
                   At risk
-                  <NotWired field="revenueAtRisk" align="right" />
                   <InfoTip
                     label={METRIC_NOTES.revenueAtRisk.label}
                     align="right"
@@ -237,19 +227,11 @@ function FrictionRow({
       <Td className="align-middle">
         <p className="text-[13px] font-medium text-primary">{point.summary}</p>
         <p className="mt-0.5 flex items-center gap-1 text-[11px] text-tertiary">
-          {point.productTitle ? (
-            <>
-              {point.productTitle}
-              <NotWired field="product" />·
-            </>
-          ) : (
-            <NotWired field="product" />
-          )}
+          {point.productTitle && <>{point.productTitle} · </>}
           {TOPIC_LABEL[point.topic]}
         </p>
         {point.verbatim && (
           <p className="mt-1 flex items-center gap-1 text-[11px] text-quaternary italic">
-            <NotWired field="verbatim" />
             &ldquo;{point.verbatim[0]}&rdquo;
             {point.verbatim.length > 1 && (
               <span className="not-italic">
@@ -279,7 +261,6 @@ function FrictionRow({
           }
         >
           {point.trend.value}
-          <NotWired field="trend" align="right" />
         </span>
       </Td>
 

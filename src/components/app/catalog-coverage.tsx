@@ -1,6 +1,5 @@
 import { Badge } from "@/components/base/badge";
 import { Card, CardHeader } from "@/components/base/card";
-import { NotWired } from "@/components/base/not-wired";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { COVERAGE, TOPIC_LABEL } from "@/lib/merchant-data";
 
@@ -32,14 +31,12 @@ export function CatalogCoverage() {
             <Th className="w-[28%]">
               <span className="inline-flex items-center gap-1">
                 Topic
-                <NotWired field="topicCoverage" />
               </span>
             </Th>
             <Th className="w-[34%]">Products covered</Th>
             <Th className="text-right">
               <span className="inline-flex items-center gap-1">
                 Sessions seeking
-                <NotWired field="product" align="right" />
               </span>
             </Th>
             <Th>Status</Th>
