@@ -25,7 +25,7 @@ export function MessagesTable() {
   return (
     <Card>
       <CardHeader
-        title="Your messages"
+        title="Nudges"
         description="Ranked by what each one adds against the held-back group. Switch off anything not earning its place."
       />
       <Table>

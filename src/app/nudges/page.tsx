@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ShoppingCart } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IntentPanel } from "@/components/app/intent-panel";
 import { NudgePanel } from "@/components/app/nudge-panel";
@@ -24,6 +24,7 @@ import {
   SUPPRESSION_TOTAL,
 } from "@/lib/nudge-data";
 import { formatCurrency, METRIC_NOTES, STORE } from "@/lib/merchant-data";
+import { ARMS, formatShare } from "@/lib/overview-data";
 
 type Filter = "all" | "resolved" | "unresolved";
 /** The two ways of reading the same firings: grouped by question, or one by one. */
@@ -81,14 +82,22 @@ export default function NudgesPage() {
           about whether any of it worked.
         */}
         <MetricCard
+          label="Added to cart"
+          icon={ShoppingCart}
+          value={formatShare(ARMS.addedToCartNudged)}
+          change={{
+            value: formatShare(
+              ARMS.addedToCartNudged / ARMS.addedToCartHoldout - 1,
+            ),
+            direction: "up",
+            comparison: "against holdout",
+          }}
+          hint={`${formatShare(ARMS.addedToCartHoldout)} among the shoppers Cue was held back from. The per-question split is below.`}
+        />
+        <MetricCard
           label="Questions settled"
           value={pct(totalResolved, NUDGE_TOTALS.shown)}
           hint={`In ${totalResolved.toLocaleString()} of ${NUDGE_TOTALS.shown.toLocaleString()} answers, the behaviour that triggered it stopped afterwards.`}
-        />
-        <MetricCard
-          label="Times Cue spoke"
-          value={NUDGE_TOTALS.shown.toLocaleString()}
-          hint="Confirmed visible on screen, not merely rendered into the page."
         />
         <MetricCard
           label="How often Cue held back"
@@ -176,6 +185,17 @@ export default function NudgesPage() {
                     </InfoTip>
                   </span>
                 </Th>
+                <Th className="text-right">
+                  <span className="inline-flex items-center gap-1.5">
+                    Cart lift
+                    <InfoTip label="Counted how" align="right">
+                      Add-to-cart for shoppers who saw this answer, against the
+                      shoppers Cue was deliberately held back from. The only
+                      figure here that is not vulnerable to the objection that
+                      they would have bought anyway.
+                    </InfoTip>
+                  </span>
+                </Th>
                 <Th className="text-right">Shown</Th>
                 <Th className="text-right">Settled it</Th>
                 <Th className="text-right">Left unsettled</Th>
@@ -205,6 +225,26 @@ export default function NudgesPage() {
                     </Td>
                     <Td className="text-right align-middle font-medium text-primary tabular-nums">
                       {formatCurrency(perf.worth)}
+                    </Td>
+                    <Td className="text-right align-middle">
+                      <span
+                        className={cx(
+                          "font-medium tabular-nums",
+                          perf.cartLift > 0.05
+                            ? "text-success-primary"
+                            : "text-error-primary",
+                        )}
+                      >
+                        {perf.cartLift > 0 ? "+" : ""}
+                        {Math.round(perf.cartLift * 100)}%
+                      </span>
+                      {perf.cartLift <= 0.05 && (
+                        <p className="mt-0.5 text-[11px] text-quaternary">
+                          {perf.cartLift < 0
+                            ? "costing sales"
+                            : "barely moving"}
+                        </p>
+                      )}
                     </Td>
                     <Td className="text-right align-middle text-secondary tabular-nums">
                       {perf.shown === 0 ? "—" : perf.shown.toLocaleString()}

@@ -18,7 +18,7 @@ import {
 import { formatCount, type TopicDemand } from "@/lib/overview-data";
 
 /**
- * Where shoppers got stuck, at two grain sizes.
+ * Customer friction points, at two grain sizes.
  *
  * These were two cards stacked on top of each other, showing the same demand
  * counted two ways — once per question, once rolled up by topic. Same source,
@@ -44,7 +44,7 @@ export function DemandBreakdown({
   return (
     <Card>
       <CardHeader
-        title="Where shoppers got stuck"
+        title="Customer friction points"
         description={
           view === "questions"
             ? "The five that got in the way most, ranked by how many shoppers hit them."

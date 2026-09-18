@@ -535,6 +535,12 @@ export function resolutionOf(firing: NudgeFiring): {
 export interface IntentPerformance {
   intent: IntentKey;
   /**
+   * Add-to-cart difference against the shoppers Cue was held back from. The
+   * only figure here that survives the objection that a shopper who saw a
+   * card and bought would very often have bought anyway.
+   */
+  cartLift: number;
+  /**
    * Net revenue attributable to settling this question — the same
    * holdout-based figure the overview totals, split by intent. This is what
    * the intents doc asks for and nothing has produced until now: a ranking by
@@ -550,12 +556,12 @@ export interface IntentPerformance {
 }
 
 export const INTENT_PERFORMANCE: IntentPerformance[] = [
-  { intent: "size", worth: 6500, shown: 4218, engaged: 1904, actionClicked: 1142, dismissed: 386, resolved: 2871, suppressed: 6104 },
-  { intent: "return_risk", worth: 3150, shown: 1877, engaged: 602, actionClicked: 88, dismissed: 174, resolved: 1341, suppressed: 3110 },
-  { intent: "fit", worth: 2820, shown: 2106, engaged: 1088, actionClicked: 704, dismissed: 201, resolved: 1402, suppressed: 2988 },
-  { intent: "fabric", worth: 900, shown: 488, engaged: 194, actionClicked: 61, dismissed: 122, resolved: 208, suppressed: 736 },
-  { intent: "bracketing", worth: 620, shown: 612, engaged: 318, actionClicked: 96, dismissed: 148, resolved: 214, suppressed: 402 },
-  { intent: "comparison", worth: 210, shown: 244, engaged: 91, actionClicked: 0, dismissed: 63, resolved: 47, suppressed: 118 },
+  { intent: "size", cartLift: 0.38, worth: 6500, shown: 4218, engaged: 1904, actionClicked: 1142, dismissed: 386, resolved: 2871, suppressed: 6104 },
+  { intent: "return_risk", cartLift: 0.21, worth: 3150, shown: 1877, engaged: 602, actionClicked: 88, dismissed: 174, resolved: 1341, suppressed: 3110 },
+  { intent: "fit", cartLift: 0.12, worth: 2820, shown: 2106, engaged: 1088, actionClicked: 704, dismissed: 201, resolved: 1402, suppressed: 2988 },
+  { intent: "fabric", cartLift: 0.02, worth: 900, shown: 488, engaged: 194, actionClicked: 61, dismissed: 122, resolved: 208, suppressed: 736 },
+  { intent: "bracketing", cartLift: 0.09, worth: 620, shown: 612, engaged: 318, actionClicked: 96, dismissed: 148, resolved: 214, suppressed: 402 },
+  { intent: "comparison", cartLift: -0.04, worth: 210, shown: 244, engaged: 91, actionClicked: 0, dismissed: 63, resolved: 47, suppressed: 118 },
 ];
 
 /**
