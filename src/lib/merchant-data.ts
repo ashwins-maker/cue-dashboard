@@ -91,6 +91,41 @@ export interface FrictionPoint {
   recommendation: string;
 }
 
+/**
+ * The three products these placeholder rows refer to.
+ *
+ * Keyed by title because that is all most callers hold — the tables render a
+ * friction point or a firing, not a catalog row. Anything not listed here
+ * still renders: it falls back to a monogram and shows no id, which is the
+ * honest result for a product the catalog sync has not reached.
+ *
+ * Images are placeholder stock, seeded so each product looks the same on
+ * every screen. Shopify's catalog sync stores no image URL today, so these
+ * stand in for the real `featuredImage` until it does.
+ */
+export const PRODUCT_CATALOG: Record<
+  string,
+  { id: string; image: string }
+> = {
+  "Mid-Rise Straight Jean": {
+    id: "gid://shopify/Product/1001",
+    image: "https://picsum.photos/seed/cue-denim-1001/96/96",
+  },
+  "High-Rise Wide Leg Jean": {
+    id: "gid://shopify/Product/1002",
+    image: "https://picsum.photos/seed/cue-denim-1002/96/96",
+  },
+  "Skinny Stretch Jean": {
+    id: "gid://shopify/Product/1003",
+    image: "https://picsum.photos/seed/cue-denim-1003/96/96",
+  },
+};
+
+/** The trailing numeric id, which is what a merchant recognises. */
+export function shortProductId(gid: string): string {
+  return `#${gid.split("/").pop() ?? gid}`;
+}
+
 export const STORE = {
   name: "Drover Denim",
   domain: "drover-denim.myshopify.com",

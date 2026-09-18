@@ -1,18 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import { cx } from "@/lib/cx";
+import { PRODUCT_CATALOG, shortProductId } from "@/lib/merchant-data";
 
 /**
  * A product, as it appears in every table on the dashboard.
  *
- * The thumbnail is generated from the title rather than fetched: the catalog
- * sync stores no image URL today, and a grey box would read as a photo that
- * failed to load. A tinted monogram reads as what it is — a stand-in — and is
- * stable per product, so the same jean looks the same on every screen.
+ * Callers pass a title, which is all most of them hold — a table renders a
+ * friction point or a firing, not a catalog row. The image and the id are
+ * looked up here so the same jean looks identical on every screen without
+ * every call site carrying the catalog around.
  *
- * `title` is optional on purpose. Plenty of what Cue does is store-wide: a
- * message written once and served everywhere, a suppression rule that fires
- * on a cart page, a question asked across the whole catalog. Those rows get a
- * dash, which is a statement that no product applies rather than a gap where
- * one is missing.
+ * Three states, on purpose:
+ *
+ *   no title      — a dash. Plenty of what Cue does is store-wide: a message
+ *                   written once and served everywhere, a rule that fires on a
+ *                   cart page. A dash says no product applies, rather than
+ *                   leaving a gap that reads as missing data.
+ *   not in catalog — the name and a tinted monogram, no id. Honest for a
+ *                   product the sync has not reached.
+ *   in catalog    — photo, name, and the id beneath it.
+ *
+ * The image falls back to the monogram if it fails to load. A broken-image
+ * icon in a table reads as a bug; a monogram reads as a product without a
+ * photo, which is what it is.
  */
 
 const TINTS = [
@@ -42,14 +54,19 @@ function monogram(title: string): string {
 
 export function ProductCell({
   title,
-  /** Shown under the name — a topic, a price, whatever the table needs. */
+  /** Overrides the catalog lookup, for rows that carry their own id. */
+  productId,
+  /** Replaces the id line — a topic, a price, whatever the table needs. */
   detail,
   className,
 }: {
   title?: string | null;
+  productId?: string;
   detail?: string;
   className?: string;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   if (!title) {
     return (
       <span
@@ -61,25 +78,52 @@ export function ProductCell({
     );
   }
 
+  const entry = PRODUCT_CATALOG[title];
+  const gid = productId ?? entry?.id;
+  const showImage = entry?.image && !imageFailed;
+
   return (
     <span className={cx("flex items-center gap-2.5", className)}>
-      <span
-        aria-hidden
-        className={cx(
-          "grid size-7 shrink-0 place-items-center rounded-md text-[10px] font-semibold",
-          tintFor(title),
-        )}
-      >
-        {monogram(title)}
-      </span>
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={entry.image}
+          alt=""
+          width={28}
+          height={28}
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+          className="size-7 shrink-0 rounded-md object-cover"
+        />
+      ) : (
+        <span
+          aria-hidden
+          className={cx(
+            "grid size-7 shrink-0 place-items-center rounded-md text-[10px] font-semibold",
+            tintFor(title),
+          )}
+        >
+          {monogram(title)}
+        </span>
+      )}
+
       <span className="min-w-0">
         <span className="block truncate text-[13px] text-secondary">
           {title}
         </span>
-        {detail && (
+        {detail ? (
           <span className="block truncate text-[11px] text-quaternary">
             {detail}
           </span>
+        ) : (
+          gid && (
+            <span
+              title={gid}
+              className="block truncate font-mono text-[11px] text-quaternary"
+            >
+              {shortProductId(gid)}
+            </span>
+          )
         )}
       </span>
     </span>
