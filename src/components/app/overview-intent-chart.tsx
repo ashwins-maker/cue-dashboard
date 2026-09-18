@@ -61,7 +61,9 @@ export function IntentChart({ rows }: { rows: IntentPerformance[] }) {
             <span className="text-right text-[10px] text-quaternary">
               Settled
             </span>
-            <span className="text-right text-[10px] text-quaternary">Shown</span>
+            <span className="text-right text-[10px] text-quaternary">
+              Shown
+            </span>
           </li>
 
           {ordered.map((row) => {

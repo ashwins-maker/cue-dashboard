@@ -56,7 +56,11 @@ export function DemandBreakdown({
               value={view}
               onChange={setView}
               options={[
-                { value: "questions", label: "Questions", count: points.length },
+                {
+                  value: "questions",
+                  label: "Questions",
+                  count: points.length,
+                },
                 { value: "topics", label: "Topics", count: topics.length },
               ]}
             />

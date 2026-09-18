@@ -61,7 +61,10 @@ export function SuppressionBreakdown({
       />
 
       <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-5 px-5 py-5">
-        <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
+        <div
+          className="relative shrink-0"
+          style={{ width: SIZE, height: SIZE }}
+        >
           <svg
             width={SIZE}
             height={SIZE}

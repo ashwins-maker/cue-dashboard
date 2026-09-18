@@ -249,3 +249,166 @@ export function returnsAvoidedOrders(): number {
 export function returnRateGap(): number {
   return REVENUE.holdoutReturnRate - REVENUE.nudgedReturnRate;
 }
+
+/* ------------------------------------------------------- performance model */
+
+/**
+ * Everything below is the holdout comparison, stated as two arms rather than
+ * one total. A shopper who saw a card and bought would very often have bought
+ * anyway, so every claim on the overview is a difference against the group
+ * that was deliberately shown nothing.
+ */
+
+/** Per-arm rates. Nudged against holdout, never nudged against "everyone". */
+export const ARMS = {
+  addedToCartNudged: 0.184,
+  addedToCartHoldout: 0.141,
+  convertedNudged: 0.085,
+  convertedHoldout: 0.062,
+} as const;
+
+/** Orders that would not have closed at the holdout's rate. */
+export function ordersInfluenced(): number {
+  return Math.round(
+    REVENUE.nudgedSessions * (ARMS.convertedNudged - ARMS.convertedHoldout),
+  );
+}
+
+/** What the merchant pays for Cue over the same period. */
+export const SUBSCRIPTION_COST = 299;
+
+/**
+ * How far past the significance floor this period's sample is.
+ *
+ * The backend's two-proportion z-test refuses to return a p-value below 30
+ * sessions per arm, but clearing that floor is not the same as being able to
+ * quote an exact figure. `reliableAt` is the sample where the confidence
+ * interval narrows enough for the headline number itself to be quotable, not
+ * just its direction — so the card can say which of the two it currently has.
+ */
+export const CONFIDENCE = {
+  sessions: REVENUE.nudgedSessions + REVENUE.holdoutSessions,
+  reliableAt: 25000,
+  /** Weeks to reach `reliableAt` at the store's current traffic. */
+  weeksRemaining: 3,
+} as const;
+
+export function confidenceShare(): number {
+  return Math.min(1, CONFIDENCE.sessions / CONFIDENCE.reliableAt);
+}
+
+/** Conversion in each arm, week by week. The gap is the product working. */
+export interface WeekPoint {
+  week: string;
+  nudged: number;
+  holdout: number;
+}
+
+export const WEEKLY: WeekPoint[] = [
+  { week: "W1", nudged: 0.064, holdout: 0.062 },
+  { week: "W2", nudged: 0.068, holdout: 0.060 },
+  { week: "W3", nudged: 0.075, holdout: 0.063 },
+  { week: "W4", nudged: 0.073, holdout: 0.059 },
+  { week: "W5", nudged: 0.081, holdout: 0.062 },
+  { week: "W6", nudged: 0.083, holdout: 0.065 },
+  { week: "W7", nudged: 0.080, holdout: 0.061 },
+  { week: "W8", nudged: 0.091, holdout: 0.064 },
+];
+
+/** What changed mid-series, so the chart is not left to speak for itself. */
+export const WEEKLY_NOTE =
+  "The gap widened from week 3, when the size-comparison message went live.";
+
+/**
+ * The lines Cue is serving, as a merchant would manage them: each one earning
+ * its place or not. Cart lift is the per-message difference against holdout,
+ * which is why a message can be shown often and still be worth switching off.
+ */
+export interface Message {
+  id: string;
+  title: string;
+  /** The behaviour that triggers it, in plain words. */
+  trigger: string;
+  shown: number;
+  engagedShare: number;
+  /** Difference in add-to-cart against the held-back group. */
+  cartLift: number;
+  live: boolean;
+}
+
+export const MESSAGES: Message[] = [
+  {
+    id: "size-runs-small",
+    title: "Runs small in the waist",
+    trigger: "Fires when a shopper flips between sizes without picking one",
+    shown: 4218,
+    engagedShare: 0.264,
+    cartLift: 0.38,
+    live: true,
+  },
+  {
+    id: "returns-free-exchange",
+    title: "Free exchanges within 30 days",
+    trigger: "Fires when a shopper checks the returns page and comes back",
+    shown: 1877,
+    engagedShare: 0.221,
+    cartLift: 0.21,
+    live: true,
+  },
+  {
+    id: "fit-measurements",
+    title: "Rise, inseam and leg opening",
+    trigger: "Fires when the size guide is opened and closed with no size picked",
+    shown: 2106,
+    engagedShare: 0.198,
+    cartLift: 0.12,
+    live: true,
+  },
+  {
+    id: "fabric-composition",
+    title: "Cotton with a little stretch",
+    trigger: "Fires on a long read of the composition",
+    shown: 488,
+    engagedShare: 0.112,
+    cartLift: 0.02,
+    live: false,
+  },
+  {
+    id: "stock-low",
+    title: "Only 3 left in this size",
+    trigger: "Fires on low stock while a size is selected",
+    shown: 368,
+    engagedShare: 0.084,
+    cartLift: -0.04,
+    live: false,
+  },
+];
+
+/**
+ * Nudged sessions from the card appearing to the order landing.
+ *
+ * Every step is a counted event, not a modelled one — which is worth saying on
+ * the card, because the revenue figure above it is modelled and the two sit
+ * next to each other.
+ */
+export interface JourneyStep {
+  label: string;
+  value: number;
+  share: number;
+}
+
+export function journey(): JourneyStep[] {
+  const base = REVENUE.nudgedSessions;
+  const engaged = NUDGE_TOTALS.engaged;
+  const carted = Math.round(base * ARMS.addedToCartNudged);
+  return [
+    { label: "Nudge shown", value: base, share: 1 },
+    { label: "Engaged with it", value: engaged, share: engaged / base },
+    { label: "Added to cart after", value: carted, share: carted / base },
+    {
+      label: "Placed an order",
+      value: REVENUE.nudgedOrders,
+      share: REVENUE.nudgedOrders / base,
+    },
+  ];
+}

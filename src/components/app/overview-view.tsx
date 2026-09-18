@@ -1,29 +1,19 @@
-import {
-  BookOpen,
-  CircleDollarSign,
-  Eye,
-  MessageCircleQuestion,
-  TriangleAlert,
-} from "lucide-react";
+import { CircleDollarSign, MessageCircleQuestion } from "lucide-react";
 import { MetricCard } from "@/components/base/metric-card";
-import { NudgeFunnel } from "@/components/app/overview-funnel";
-import { SuppressionBreakdown } from "@/components/app/overview-suppression";
 import { DemandBreakdown } from "@/components/app/overview-demand";
+import { NudgeToOrder } from "@/components/app/overview-journey";
+import { MessagesTable } from "@/components/app/overview-messages";
+import { RevenueHeadline } from "@/components/app/overview-revenue";
+import { WeeklyConversion } from "@/components/app/overview-weekly";
+import { type FrictionPoint, STORE } from "@/lib/merchant-data";
 import {
-  formatCurrency,
-  type FrictionPoint,
-  METRIC_NOTES,
-  revenueAtRiskTotal,
-  STORE,
-} from "@/lib/merchant-data";
-import {
+  ARMS,
   formatCount,
   formatShare,
-  netRevenueAdded,
   REVENUE,
-  returnsAvoidedOrders,
   summariseOverview,
 } from "@/lib/overview-data";
+import { NUDGE_TOTALS } from "@/lib/nudge-data";
 
 /**
  * The overview screen.
@@ -39,9 +29,6 @@ import {
  */
 export function OverviewView({ points }: { points: FrictionPoint[] }) {
   const s = summariseOverview(points);
-  const netAdded = netRevenueAdded();
-  const returnsAvoided = returnsAvoidedOrders();
-  const atRisk = revenueAtRiskTotal(points);
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,123 +54,68 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
         </div>
       ) : (
         <>
+          <RevenueHeadline />
+
           {/*
-            Earned, still to earn, and the demand behind both. The two money
-            figures are differences against the held-back group, never totals
-            over nudged sessions — a shopper who saw a card and bought would
-            very often have bought anyway. See lib/overview-data.ts.
-
-            The third card is a count, and it is the one that should fall. A
-            question that stops being asked has been answered on the page, so
-            its own trend is the product working.
-
-            Sales lift and returns avoided are one card, not two: returns
-            avoided is part of net revenue added, so showing them side by side
-            invites a merchant to add them together and double-count.
+            The four rates that sit under the money. Add to cart and conversion
+            carry their holdout counterpart inline rather than as a separate
+            card: the pair is the claim, and splitting them invites reading the
+            nudged rate on its own.
           */}
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              label="Net revenue added"
-              icon={CircleDollarSign}
-              value={formatCurrency(netAdded)}
-              info={{
-                label: METRIC_NOTES.netRevenueAdded.label,
-                body: METRIC_NOTES.netRevenueAdded.body,
-              }}
-              hint={
-                <>
-                  {formatCurrency(REVENUE.liftFromSales)} from extra sales, plus{" "}
-                  {formatCurrency(REVENUE.liftFromFewerReturns)} from{" "}
-                  {returnsAvoided} orders that did not come back —{" "}
-                  {formatShare(REVENUE.nudgedReturnRate)} against{" "}
-                  {formatShare(REVENUE.holdoutReturnRate)} of the held-back
-                  group.
-                </>
-              }
-            />
-            <MetricCard
-              label="Revenue at risk"
-              icon={TriangleAlert}
-              value={formatCurrency(atRisk)}
-              lowerIsBetter
-              info={{
-                label: METRIC_NOTES.revenueAtRisk.label,
-                body: METRIC_NOTES.revenueAtRisk.body,
-              }}
-              hint={`Behind ${s.uncoveredCount} questions your pages cannot answer, so Cue stays silent on all of them. This is the work list.`}
-            />
-            <MetricCard
-              label="Questions shoppers asked"
+              label="Nudges shown"
               icon={MessageCircleQuestion}
-              value={formatCount(s.stuckEncounters)}
-              lowerIsBetter
-              change={
-                s.demand
-                  ? { value: s.demand.value, direction: s.demand.direction }
-                  : undefined
-              }
-              info={{
-                label: METRIC_NOTES.demandAnswered.label,
-                body: METRIC_NOTES.demandAnswered.body,
-                align: "right",
-              }}
-              hint={`${formatShare(s.resolvedShare)} were answered on the spot. ${s.movement.falling} of ${s.frictionPointCount} questions are being asked less than last period — falling is the goal.`}
+              value={formatCount(REVENUE.nudgedSessions)}
+              hint={`Across ${formatCount(s.sessionsObserved)} visits. One shopper in ${Math.round(s.visitsPerNudge)} sees a card at all.`}
             />
-
-            {/*
-              Coverage and interruption rate are the two figures a merchant
-              needs that no money number carries: whether the catalog is ready,
-              and whether Cue is being a nuisance while it gets there.
-            */}
             <MetricCard
-              label="Questions your store can answer"
-              icon={BookOpen}
-              value={formatShare(s.answerCoverage)}
-              info={{
-                label: "Counted how",
-                body: "Of the moments Cue judged that a shopper needed an answer, the share where your store held content to give. The remainder are the only silences you can do anything about — every other reason Cue stays quiet is a decision it made on purpose.",
-              }}
-              hint={`${formatCount(s.noContentMoments)} times Cue wanted to speak and found nothing on the page. Add content and this rises.`}
+              label="Engaged with it"
+              value={formatShare(
+                s.nudgesShown > 0 ? NUDGE_TOTALS.engaged / s.nudgesShown : 0,
+              )}
+              hint={`${formatCount(NUDGE_TOTALS.engaged)} shoppers expanded a card or used its action.`}
             />
-
             <MetricCard
-              label="How often a shopper sees Cue"
-              icon={Eye}
-              value={`1 in ${Math.round(s.visitsPerNudge)}`}
-              info={{
-                label: "Counted how",
-                body: "Nudges shown against visits Cue could observe. A restraint-led widget should sit well below one in two — this is the number that says whether it is being a nuisance, which a share of internal decisions cannot.",
-                align: "right",
+              label="Added to cart"
+              value={formatShare(ARMS.addedToCartNudged)}
+              change={{
+                value: formatShare(
+                  ARMS.addedToCartNudged / ARMS.addedToCartHoldout - 1,
+                ),
+                direction: "up",
+                comparison: "against holdout",
               }}
-              hint={`${formatCount(s.nudgesShown)} cards across ${formatCount(s.sessionsObserved)} visits. Most shoppers never see Cue at all.`}
+              hint={`${formatShare(ARMS.addedToCartHoldout)} among the shoppers Cue was held back from.`}
+            />
+            <MetricCard
+              label="Placed an order"
+              icon={CircleDollarSign}
+              value={formatShare(ARMS.convertedNudged)}
+              change={{
+                value: formatShare(
+                  ARMS.convertedNudged / ARMS.convertedHoldout - 1,
+                ),
+                direction: "up",
+                comparison: "against holdout",
+              }}
+              hint={`${formatShare(ARMS.convertedHoldout)} among the shoppers Cue was held back from.`}
             />
           </section>
 
+          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+            <WeeklyConversion />
+            <NudgeToOrder />
+          </section>
+
+          <MessagesTable />
+
           {/*
-            The work list sits directly under the figures, not at the foot of
-            the page. Everything above says how the store is doing; this is the
-            only part a merchant can act on, so it comes before the breakdowns
-            that explain it.
+            The work list last, but with the two figures it needs to be acted
+            on: what each question is costing, and whether your pages can
+            answer it at all.
           */}
           <DemandBreakdown points={s.topPoints} topics={s.topicDemand} />
-
-          <section className="grid gap-4 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <NudgeFunnel
-                steps={s.funnel}
-                dismissed={s.nudgesDismissed}
-                resolved={s.resolved}
-                resolvedShare={s.resolvedShare}
-              />
-            </div>
-            <div className="lg:col-span-3">
-              <SuppressionBreakdown
-                reasons={s.suppression}
-                total={s.suppressed}
-                quietShare={s.quietShare}
-              />
-            </div>
-          </section>
         </>
       )}
     </div>
