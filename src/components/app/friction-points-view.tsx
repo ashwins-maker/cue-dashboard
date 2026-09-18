@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CatalogCoverage } from "@/components/app/catalog-coverage";
+import { ProductCell } from "@/components/base/product-cell";
 import { StatBand } from "@/components/base/stat-band";
 import { FrictionPanel } from "@/components/app/friction-panel";
 import { Badge, type BadgeColor } from "@/components/base/badge";
@@ -123,7 +124,8 @@ export function FrictionPointsView({ points }: { points: FrictionPoint[] }) {
         <Table>
           <thead>
             <tr>
-              <Th className="w-[40%]">Friction point</Th>
+              <Th className="w-[30%]">Friction point</Th>
+              <Th className="w-[17%]">Product</Th>
               <Th>How we know</Th>
               <Th className="text-right">
                 <span className="inline-flex items-center gap-1">
@@ -133,7 +135,7 @@ export function FrictionPointsView({ points }: { points: FrictionPoint[] }) {
                   </InfoTip>
                 </span>
                 <span className="block font-normal text-quaternary normal-case">
-                  and change {PERIOD_COMPARISON}
+                  {PERIOD_COMPARISON}
                 </span>
               </Th>
               <Th>Your page</Th>
@@ -201,22 +203,35 @@ function FrictionRow({
   return (
     <Tr onClick={onSelect} selected={selected}>
       <Td className="align-middle">
-        <p className="text-[13px] font-medium text-primary">{point.summary}</p>
-        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-tertiary">
-          {point.productTitle && <>{point.productTitle} · </>}
-          {TOPIC_LABEL[point.topic]}
-        </p>
-        {point.verbatim && (
-          <p className="mt-1 flex items-center gap-1 text-[11px] text-quaternary italic">
-            &ldquo;{point.verbatim[0]}&rdquo;
-            {point.verbatim.length > 1 && (
-              <span className="not-italic">
-                {" "}
-                +{point.verbatim.length - 1} more
-              </span>
-            )}
+        {/* A width class on the <th> does not bind in an auto-layout table —
+            the widest cell content wins. A min-width on a block inside the
+            cell is the one place the constraint holds, so the summary keeps
+            its two lines instead of collapsing to a column of single words. */}
+        <div className="min-w-[230px]">
+          <p className="text-[13px] font-medium text-primary">
+            {point.summary}
           </p>
-        )}
+          <p className="mt-0.5 text-[11px] text-tertiary">
+            {TOPIC_LABEL[point.topic]}
+          </p>
+          {point.verbatim && (
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-quaternary italic">
+              &ldquo;{point.verbatim[0]}&rdquo;
+              {point.verbatim.length > 1 && (
+                <span className="not-italic">
+                  {" "}
+                  +{point.verbatim.length - 1} more
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+      </Td>
+
+      <Td className="align-middle">
+        <div className="min-w-[150px]">
+          <ProductCell title={point.productTitle} />
+        </div>
       </Td>
 
       <Td className="align-middle">

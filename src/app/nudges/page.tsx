@@ -7,6 +7,7 @@ import { NudgePanel } from "@/components/app/nudge-panel";
 import { Badge } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
+import { ProductCell } from "@/components/base/product-cell";
 import { StatBand } from "@/components/base/stat-band";
 import { InfoTip } from "@/components/base/info-tip";
 import { Table, Td, Th, Tr } from "@/components/base/table";
@@ -140,7 +141,8 @@ export default function NudgesPage() {
           <Table>
             <thead>
               <tr>
-                <Th className="w-[40%]">Question</Th>
+                <Th className="w-[34%]">Question</Th>
+                <Th className="w-[16%]">Product</Th>
                 <Th className="text-right">
                   <span className="inline-flex items-center gap-1.5">
                     Worth settling
@@ -185,6 +187,9 @@ export default function NudgesPage() {
                       <p className="mt-0.5 text-[11px] leading-relaxed text-tertiary">
                         {intent.behaviour}
                       </p>
+                    </Td>
+                    <Td className="align-middle">
+                      <ProductCell />
                     </Td>
                     <Td className="text-right align-middle font-medium text-primary tabular-nums">
                       {formatCurrency(perf.worth)}
@@ -246,7 +251,8 @@ export default function NudgesPage() {
           <Table>
             <thead>
               <tr>
-                <Th className="w-[38%]">What it said</Th>
+                <Th className="w-[32%]">What it said</Th>
+                <Th className="w-[18%]">Product</Th>
                 <Th>Intent</Th>
                 <Th>Set off by</Th>
                 <Th className="text-right">Visible</Th>
@@ -271,12 +277,12 @@ export default function NudgesPage() {
                       <p className="text-[13px] text-primary">
                         {firing.contentText}
                       </p>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-tertiary">
-                        {firing.productTitle}
-                        <span className="text-quaternary">
-                          · {firing.shownAt}
-                        </span>
+                      <p className="mt-0.5 text-[11px] text-quaternary">
+                        {firing.shownAt}
                       </p>
+                    </Td>
+                    <Td className="align-middle">
+                      <ProductCell title={firing.productTitle} />
                     </Td>
                     <Td className="align-middle">
                       <Badge color="brand">{intent.label}</Badge>
@@ -332,8 +338,9 @@ export default function NudgesPage() {
         <Table>
           <thead>
             <tr>
-              <Th className="w-[30%]">Reason</Th>
-              <Th className="w-[40%]">What it means</Th>
+              <Th className="w-[26%]">Reason</Th>
+              <Th className="w-[14%]">Product</Th>
+              <Th className="w-[34%]">What it means</Th>
               <Th className="text-right">Sessions</Th>
               <Th className="text-right">Share</Th>
             </tr>
@@ -348,6 +355,9 @@ export default function NudgesPage() {
                   <code className="mt-0.5 block font-mono text-[11px] text-quaternary">
                     {reason.rule}
                   </code>
+                </Td>
+                <Td className="align-middle">
+                  <ProductCell />
                 </Td>
                 <Td className="text-[13px] leading-relaxed text-secondary">
                   {reason.explanation}

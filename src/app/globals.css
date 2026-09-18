@@ -166,6 +166,12 @@
   --radius-2xl: 20px;
   --radius-3xl: 24px;
   --radius-full: 9999px;
+
+  /* The Cue mark. Its own ramp rather than the surface tokens: the shell must
+     stay light on the dark rail, so it cannot follow the background. */
+  --cue-mark-shell: #f2ebe1;
+  --cue-mark-core: #171310;
+  --cue-mark-eye: #f7f2ea;
 }
 
 @theme inline {
@@ -197,40 +203,102 @@
 /* ---------------------------------------------------------------------------
    Semantic utilities
    --------------------------------------------------------------------------- */
-@utility bg-rail { background-color: var(--bg-rail); }
-@utility bg-primary { background-color: var(--bg-primary); }
-@utility bg-primary-alt { background-color: var(--bg-primary-alt); }
-@utility bg-secondary { background-color: var(--bg-secondary); }
-@utility bg-secondary-alt { background-color: var(--bg-secondary-alt); }
-@utility bg-tertiary { background-color: var(--bg-tertiary); }
-@utility bg-quaternary { background-color: var(--bg-quaternary); }
-@utility bg-active { background-color: var(--bg-active); }
-@utility bg-disabled { background-color: var(--bg-disabled); }
-@utility bg-overlay { background-color: var(--bg-overlay); }
-@utility bg-brand-solid { background-color: var(--bg-brand-solid); }
-@utility bg-brand-primary { background-color: var(--bg-brand-primary); }
-@utility bg-error-solid { background-color: var(--bg-error-solid); }
+@utility bg-rail {
+  background-color: var(--bg-rail);
+}
+@utility bg-primary {
+  background-color: var(--bg-primary);
+}
+@utility bg-primary-alt {
+  background-color: var(--bg-primary-alt);
+}
+@utility bg-secondary {
+  background-color: var(--bg-secondary);
+}
+@utility bg-secondary-alt {
+  background-color: var(--bg-secondary-alt);
+}
+@utility bg-tertiary {
+  background-color: var(--bg-tertiary);
+}
+@utility bg-quaternary {
+  background-color: var(--bg-quaternary);
+}
+@utility bg-active {
+  background-color: var(--bg-active);
+}
+@utility bg-disabled {
+  background-color: var(--bg-disabled);
+}
+@utility bg-overlay {
+  background-color: var(--bg-overlay);
+}
+@utility bg-brand-solid {
+  background-color: var(--bg-brand-solid);
+}
+@utility bg-brand-primary {
+  background-color: var(--bg-brand-primary);
+}
+@utility bg-error-solid {
+  background-color: var(--bg-error-solid);
+}
 
-@utility text-primary { color: var(--text-primary); }
-@utility text-secondary { color: var(--text-secondary); }
-@utility text-tertiary { color: var(--text-tertiary); }
-@utility text-quaternary { color: var(--text-quaternary); }
-@utility text-placeholder { color: var(--text-placeholder); }
-@utility text-disabled { color: var(--text-disabled); }
-@utility text-brand-primary { color: var(--text-brand-primary); }
-@utility text-error-primary { color: var(--text-error-primary); }
-@utility text-warning-primary { color: var(--text-warning-primary); }
-@utility text-success-primary { color: var(--text-success-primary); }
-@utility text-on-brand { color: var(--text-on-brand); }
-@utility text-on-solid { color: var(--text-on-solid); }
+@utility text-primary {
+  color: var(--text-primary);
+}
+@utility text-secondary {
+  color: var(--text-secondary);
+}
+@utility text-tertiary {
+  color: var(--text-tertiary);
+}
+@utility text-quaternary {
+  color: var(--text-quaternary);
+}
+@utility text-placeholder {
+  color: var(--text-placeholder);
+}
+@utility text-disabled {
+  color: var(--text-disabled);
+}
+@utility text-brand-primary {
+  color: var(--text-brand-primary);
+}
+@utility text-error-primary {
+  color: var(--text-error-primary);
+}
+@utility text-warning-primary {
+  color: var(--text-warning-primary);
+}
+@utility text-success-primary {
+  color: var(--text-success-primary);
+}
+@utility text-on-brand {
+  color: var(--text-on-brand);
+}
+@utility text-on-solid {
+  color: var(--text-on-solid);
+}
 
-@utility border-primary { border-color: var(--border-primary); }
-@utility border-secondary { border-color: var(--border-secondary); }
-@utility border-tertiary { border-color: var(--border-tertiary); }
-@utility border-brand { border-color: var(--border-brand); }
-@utility border-error { border-color: var(--border-error); }
+@utility border-primary {
+  border-color: var(--border-primary);
+}
+@utility border-secondary {
+  border-color: var(--border-secondary);
+}
+@utility border-tertiary {
+  border-color: var(--border-tertiary);
+}
+@utility border-brand {
+  border-color: var(--border-brand);
+}
+@utility border-error {
+  border-color: var(--border-error);
+}
 
-@utility ring-primary { --tw-ring-color: var(--border-primary); }
+@utility ring-primary {
+  --tw-ring-color: var(--border-primary);
+}
 
 /* The one card allowed to glow: a wash of accent from the top-left corner,
    sitting on a slightly warmer panel than its neighbours. */
@@ -278,4 +346,31 @@ body {
 *:focus-visible {
   outline: 2px solid var(--brand-500);
   outline-offset: 2px;
+}
+
+/* The mark's blink. A long cycle, so it reads as presence rather than motion. */
+@keyframes cue-blink {
+  0%,
+  88%,
+  100% {
+    transform: scaleY(1);
+  }
+  90.5% {
+    transform: scaleY(0.05);
+  }
+  93% {
+    transform: scaleY(1);
+  }
+}
+
+.cue-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cue-blink 4.2s cubic-bezier(0.4, 0, 0.3, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue-eye {
+    animation: none;
+  }
 }

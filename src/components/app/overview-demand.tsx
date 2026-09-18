@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Badge } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
+import { ProductCell } from "@/components/base/product-cell";
 import { InfoTip } from "@/components/base/info-tip";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { cx } from "@/lib/cx";
@@ -100,6 +101,7 @@ function QuestionRows({ points }: { points: FrictionPoint[] }) {
       <thead>
         <tr>
           <Th>Question</Th>
+          <Th className="w-[18%]">Product</Th>
           <Th className="text-right">
             <span className="inline-flex items-center gap-1.5">
               Shoppers
@@ -140,9 +142,11 @@ function QuestionRows({ points }: { points: FrictionPoint[] }) {
                   </p>
                   <p className="mt-0.5 truncate text-[12px] text-quaternary">
                     {TOPIC_LABEL[point.topic]}
-                    {point.productTitle && ` · ${point.productTitle}`}
                   </p>
                 </div>
+              </Td>
+              <Td className="align-middle">
+                <ProductCell title={point.productTitle} />
               </Td>
               <Td className="text-right font-medium text-primary tabular-nums">
                 {formatCount(point.sessions)}

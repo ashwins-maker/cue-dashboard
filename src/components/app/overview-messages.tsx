@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardHeader } from "@/components/base/card";
+import { ProductCell } from "@/components/base/product-cell";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { Toggle } from "@/components/base/toggle";
 import { cx } from "@/lib/cx";
@@ -31,7 +32,8 @@ export function MessagesTable() {
       <Table>
         <thead>
           <tr>
-            <Th className="w-[44%]">Message</Th>
+            <Th className="w-[36%]">Message</Th>
+            <Th className="w-[16%]">Product</Th>
             <Th className="text-right">Shown</Th>
             <Th className="text-right">Engaged</Th>
             <Th className="text-right">Cart lift</Th>
@@ -75,6 +77,9 @@ function MessageRow({
       <Td>
         <p className="text-[13px] font-medium text-primary">{message.title}</p>
         <p className="mt-0.5 text-[11px] text-tertiary">{message.trigger}</p>
+      </Td>
+      <Td className="align-middle">
+        <ProductCell />
       </Td>
       <Td className="text-right align-middle text-secondary tabular-nums">
         {message.shown.toLocaleString()}

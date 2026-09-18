@@ -27,7 +27,8 @@ export function AppHeader() {
   useEffect(() => {
     if (!periodOpen) return;
     const onDown = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) setPeriodOpen(false);
+      if (!menuRef.current?.contains(event.target as Node))
+        setPeriodOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setPeriodOpen(false);
@@ -43,11 +44,7 @@ export function AppHeader() {
   return (
     <>
       <header className="flex flex-wrap items-center gap-2.5 bg-rail px-5 py-3">
-        <p className="mr-auto text-[13px] font-medium text-secondary">
-          {STORE.name}
-        </p>
-
-        <div className="relative" ref={menuRef}>
+        <div className="relative mr-auto" ref={menuRef}>
           <button
             type="button"
             aria-haspopup="listbox"

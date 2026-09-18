@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CueMark } from "@/components/base/cue-mark";
 import { cx } from "@/lib/cx";
 import { FRICTION_POINTS, STORE } from "@/lib/merchant-data";
 
@@ -31,12 +32,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-[228px] shrink-0 flex-col bg-rail">
       <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white">
-          <span className="flex gap-[3px]">
-            <span className="size-1 rounded-full bg-gray-950" />
-            <span className="size-1 rounded-full bg-gray-950" />
-          </span>
-        </span>
+        <CueMark className="size-8 shrink-0" />
         <div className="min-w-0">
           <p className="truncate text-[13px] font-semibold text-primary">
             Cue
