@@ -8,11 +8,14 @@ import {
   formatCurrency,
   type FrictionPoint,
   METRIC_NOTES,
+  revenueAtRiskTotal,
   STORE,
 } from "@/lib/merchant-data";
 import {
-  formatCount,
   formatShare,
+  netRevenueAdded,
+  REVENUE,
+  returnsAvoidedOrders,
   summariseOverview,
 } from "@/lib/overview-data";
 
@@ -30,6 +33,9 @@ import {
  */
 export function OverviewView({ points }: { points: FrictionPoint[] }) {
   const s = summariseOverview(points);
+  const netAdded = netRevenueAdded();
+  const returnsAvoided = returnsAvoidedOrders();
+  const atRisk = revenueAtRiskTotal(points);
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,85 +61,56 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
         </div>
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {/*
-              Demand first. The product's claim is that a question stops being
-              asked once its answer is on the page, so the total and its
-              direction are the only figures that can show the product working
-              at all. Everything after this explains it.
-            */}
+          {/*
+            Earned, still to earn, already fixed. Every money figure is a
+            difference against the held-back group, never a total over nudged
+            sessions — a shopper who saw a card and bought would very often
+            have bought anyway. See the REVENUE block in lib/overview-data.ts.
+
+            Sales lift and returns avoided are one card, not two: returns
+            avoided is part of net revenue added, so showing them side by side
+            invites a merchant to add them together and double-count.
+          */}
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Questions shoppers asked"
-              value={formatCount(s.stuckEncounters)}
+              label="Net revenue added"
+              value={formatCurrency(netAdded)}
               emphasis
-              lowerIsBetter
-              change={
-                s.demand
-                  ? { value: s.demand.value, direction: s.demand.direction }
-                  : undefined
-              }
               info={{
-                label: METRIC_NOTES.sessions.label,
-                body: METRIC_NOTES.sessions.body,
+                label: METRIC_NOTES.netRevenueAdded.label,
+                body: METRIC_NOTES.netRevenueAdded.body,
               }}
               visual={
                 <MiniBar
                   segments={[
                     {
-                      value: s.movement.falling,
+                      value: REVENUE.liftFromSales,
                       className: "bg-[var(--chart-positive)]",
-                      label: `${s.movement.falling} asked less often`,
+                      label: `${formatCurrency(REVENUE.liftFromSales)} from sales that closed`,
                     },
                     {
-                      value: s.movement.flat,
-                      className: "bg-[var(--chart-track)]",
-                      label: `${s.movement.flat} unchanged`,
-                    },
-                    {
-                      value: s.movement.rising,
-                      className: "bg-[var(--chart-negative)]",
-                      label: `${s.movement.rising} asked more often`,
+                      value: REVENUE.liftFromFewerReturns,
+                      className: "bg-[var(--chart-accent)]",
+                      label: `${formatCurrency(REVENUE.liftFromFewerReturns)} from returns that did not happen`,
                     },
                   ]}
                 />
               }
-              hint={`${s.movement.falling} of ${s.frictionPointCount} questions are being asked less than last period. Falling is the goal.`}
-            />
-
-            <MetricCard
-              label="Answered on the spot"
-              value={formatShare(s.resolvedShare)}
-              visual={
-                <MiniBar
-                  segments={[
-                    {
-                      value: s.resolved,
-                      className: "bg-[var(--chart-positive)]",
-                      label: "Hesitation ended",
-                    },
-                    {
-                      value: Math.max(0, s.nudgesShown - s.resolved),
-                      className: "bg-[var(--chart-track)]",
-                      label: "Still hesitating",
-                    },
-                  ]}
-                />
+              hint={
+                <>
+                  {formatCurrency(REVENUE.liftFromSales)} from extra sales, plus{" "}
+                  {formatCurrency(REVENUE.liftFromFewerReturns)} from{" "}
+                  {returnsAvoided} orders that did not come back —{" "}
+                  {formatShare(REVENUE.nudgedReturnRate)} against{" "}
+                  {formatShare(REVENUE.holdoutReturnRate)} of the held-back
+                  group.
+                </>
               }
-              hint={`Cue answered ${formatCount(s.nudgesShown)} times. In ${formatCount(s.resolved)} of them the shopper stopped flipping sizes, reopening the size chart, or hunting for the returns policy.`}
             />
-
             <MetricCard
-              label="Nothing on the page to answer with"
-              value={formatCurrency(s.revenueAtRisk)}
+              label="Revenue at risk"
+              value={formatCurrency(atRisk)}
               lowerIsBetter
-              change={
-                s.uncoveredDemand
-                  ? {
-                      value: s.uncoveredDemand.value,
-                      direction: s.uncoveredDemand.direction,
-                    }
-                  : undefined
-              }
               info={{
                 label: METRIC_NOTES.revenueAtRisk.label,
                 body: METRIC_NOTES.revenueAtRisk.body,
@@ -145,34 +122,33 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
                   label={`${s.uncoveredCount} of ${s.frictionPointCount} friction points have no answer on the page.`}
                 />
               }
-              hint={`${formatCount(s.uncoveredSessions)} shoppers hit ${s.uncoveredCount} questions your store cannot answer. This is the work list.`}
+              hint={`Behind ${s.uncoveredCount} questions your pages cannot answer, so Cue stays silent on all of them. This is the work list.`}
             />
-
             <MetricCard
-              label="Cue stayed quiet"
-              value={formatShare(s.quietShare)}
+              label="Recovered by fixing pages"
+              value={formatCurrency(REVENUE.gapsClosedValue)}
               info={{
-                label: METRIC_NOTES.holdout.label,
-                body: METRIC_NOTES.holdout.body,
+                label: METRIC_NOTES.gapsClosed.label,
+                body: METRIC_NOTES.gapsClosed.body,
                 align: "right",
               }}
               visual={
                 <MiniBar
                   segments={[
                     {
-                      value: s.suppressed,
-                      className: "bg-[var(--chart-track)]",
-                      label: "Held back",
+                      value: REVENUE.gapsClosedValue,
+                      className: "bg-[var(--chart-positive)]",
+                      label: "Questions answered on the page",
                     },
                     {
-                      value: s.nudgesShown,
-                      className: "bg-[var(--chart-accent)]",
-                      label: "Spoke",
+                      value: atRisk,
+                      className: "bg-[var(--chart-track)]",
+                      label: "Still unanswered",
                     },
                   ]}
                 />
               }
-              hint={`Of the moments it could have spoken, it held back ${formatCount(s.suppressed)} times. Silence is the default.`}
+              hint={`${REVENUE.gapsClosed} questions stopped being asked after you added the answer. Cue no longer has to speak for them.`}
             />
           </section>
 

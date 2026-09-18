@@ -76,7 +76,7 @@ export default function NudgesPage() {
           about whether any of it worked.
         */}
         <MetricCard
-          label="Settled the question"
+          label="Questions settled"
           value={pct(totalResolved, NUDGE_TOTALS.shown)}
           emphasis
           hint={`In ${totalResolved.toLocaleString()} of ${NUDGE_TOTALS.shown.toLocaleString()} answers, the behaviour that triggered it stopped afterwards.`}
@@ -87,7 +87,7 @@ export default function NudgesPage() {
           hint="Confirmed visible on screen, not merely rendered into the page."
         />
         <MetricCard
-          label="Times it stayed quiet"
+          label="How often Cue held back"
           value={pct(
             SUPPRESSION_TOTAL,
             SUPPRESSION_TOTAL + NUDGE_TOTALS.shown,
@@ -95,7 +95,7 @@ export default function NudgesPage() {
           hint={`It held back ${SUPPRESSION_TOTAL.toLocaleString()} times. Every one is logged with a reason.`}
         />
         <MetricCard
-          label="Closed by the shopper"
+          label="Dismissed by the shopper"
           value={pct(NUDGE_TOTALS.dismissed, NUDGE_TOTALS.shown)}
           lowerIsBetter
           hint={`${NUDGE_TOTALS.dismissed.toLocaleString()} were dismissed outright. Rising means Cue is interrupting.`}

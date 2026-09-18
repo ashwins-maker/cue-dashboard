@@ -105,18 +105,18 @@ export function FrictionPointsView({
           hint="Occurring on a live product page right now."
         />
         <MetricCard
-          label="Nothing to answer with"
+          label="Questions you can't answer"
           value={uncoveredCount}
           change={{ value: "1", direction: "up" }}
           lowerIsBetter
           hint="Cue stays silent on these. Your store holds no content to serve."
         />
         <MetricCard
-          label="Fixed this period"
+          label="Questions fixed"
           value="7"
           change={{ value: "3", direction: "up" }}
           info={METRIC_NOTES.resolved}
-          hint="Answers promoted onto the page. Cue no longer needs to serve them."
+          hint="Answered on the page this period, so Cue no longer needs to serve them."
         />
       </div>
 

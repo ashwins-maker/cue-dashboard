@@ -170,3 +170,62 @@ export function formatCount(value: number): string {
 export function formatShare(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
+
+/**
+ * The revenue model behind the overview's four headline cards.
+ *
+ * Every figure here is a difference against the held-back control group, never
+ * a raw total over nudged sessions. That distinction is the whole point: a
+ * shopper who saw a card and bought would very often have bought anyway, so
+ * "revenue influenced" is a claim rather than a measurement. The holdout is
+ * the only thing that makes any of this causal, which is why it is never 0%.
+ *
+ * Net revenue added deliberately nets off returns, because the product's own
+ * bar is that a fit nudge which sells and comes back has failed. Returns
+ * avoided is therefore a COMPONENT of net added, not a separate win to be
+ * summed alongside it — presenting the two as additive would double-count.
+ */
+export const REVENUE = {
+  /** Sessions in each arm over the period. */
+  nudgedSessions: 9057,
+  holdoutSessions: 1006,
+
+  /** Extra revenue from sales that would not have closed, before returns. */
+  liftFromSales: 8695,
+  /** Revenue kept because fewer of those orders came back. */
+  liftFromFewerReturns: 5505,
+
+  /** Orders in the nudged arm, and the return rate in each. */
+  nudgedOrders: 768,
+  nudgedReturnRate: 0.091,
+  holdoutReturnRate: 0.147,
+  averageOrderValue: 128,
+
+  /**
+   * Revenue recovered because the merchant put an answer on the page and the
+   * question stopped being asked. This is the product working as intended —
+   * demand falling rather than a card being shown forever — so it is counted
+   * separately from anything Cue earned by speaking.
+   */
+  gapsClosedValue: 6840,
+  /** Friction points retired this period by a page edit. */
+  gapsClosed: 3,
+} as const;
+
+/** Sales lift plus returns avoided. The headline. */
+export function netRevenueAdded(): number {
+  return REVENUE.liftFromSales + REVENUE.liftFromFewerReturns;
+}
+
+/** Orders that would have come back at the holdout's rate, and did not. */
+export function returnsAvoidedOrders(): number {
+  return Math.round(
+    (REVENUE.holdoutReturnRate - REVENUE.nudgedReturnRate) *
+      REVENUE.nudgedOrders,
+  );
+}
+
+/** Orders in each arm, expressed as the rate difference the card shows. */
+export function returnRateGap(): number {
+  return REVENUE.holdoutReturnRate - REVENUE.nudgedReturnRate;
+}

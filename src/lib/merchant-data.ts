@@ -106,6 +106,14 @@ export const STORE = {
  * in one place so the same explanation cannot drift between screens.
  */
 export const METRIC_NOTES = {
+  netRevenueAdded: {
+    label: "Measured against a held-back group",
+    body: "A random slice of shoppers never sees Cue at all. We compare revenue per session between the two groups and multiply the difference by the number who did see it, so sales that would have happened anyway are not counted. Returns are netted off, because a sale that comes back is not a win — the held-back group returns more often, and that gap is part of this figure rather than additional to it. Not yet measured: an order carries no record of which group the shopper was in.",
+  },
+  gapsClosed: {
+    label: "Questions that stopped being asked",
+    body: "When an answer goes onto the product page, shoppers stop hesitating over it and Cue stops needing to speak. We price the drop in demand the same way as revenue at risk. This is your own work paying off, not Cue's. Not yet measured: nothing records that an answer was promoted onto a page.",
+  },
   revenueAtRisk: {
     label: "Sales you are probably losing",
     body: "These shoppers buy less often than others looking at the same product. We take that gap, multiply by how many of them there are, and multiply by the price. A rough estimate, not a measured loss.",
