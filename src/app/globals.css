@@ -1,26 +1,283 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Primitives.
+
+   Neutral near-black rather than the blue-tinted Untitled UI dark gray — the
+   surfaces step up in very small increments and the borders are hairlines, so
+   depth comes from the steps rather than from contrast.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gray-25: #fafafa;
+  --gray-50: #f4f4f5;
+  --gray-100: #e9e9ec;
+  --gray-200: #d3d3d9;
+  --gray-300: #a8a8b3;
+  --gray-400: #85858f;
+  --gray-500: #6a6a74;
+  --gray-600: #4a4a52;
+  --gray-700: #2e2e35;
+  --gray-800: #222227;
+  --gray-900: #16161a;
+  --gray-950: #0e0e10;
+  --gray-1000: #0a0a0c;
+
+  /* Accent — one colour, used sparingly. Swap this ramp to rebrand. */
+  --brand-50: #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-200: #bfdbfe;
+  --brand-300: #93c5fd;
+  --brand-400: #60a5fa;
+  --brand-500: #3b82f6;
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
+  --brand-800: #1e40af;
+  --brand-900: #1e3a8a;
+  --brand-950: #141c33;
+
+  --error-300: #fda29b;
+  --error-400: #f97066;
+  --error-500: #f04438;
+  --error-600: #d92d20;
+  --error-700: #b42318;
+  --error-900: #7a271a;
+  --error-950: #2a1412;
+
+  --warning-300: #fec84b;
+  --warning-400: #fdb022;
+  --warning-500: #f79009;
+  --warning-600: #dc6803;
+  --warning-700: #b54708;
+  --warning-900: #7a2e0e;
+  --warning-950: #2a1d0c;
+
+  --success-300: #75e0a7;
+  --success-400: #47cd89;
+  --success-500: #17b26a;
+  --success-600: #079455;
+  --success-700: #067647;
+  --success-900: #074d31;
+  --success-950: #0c2019;
+
+  /* ------------------------------------------------------------------------
+     Semantic surfaces
+     ------------------------------------------------------------------------ */
+  --bg-rail: var(--gray-1000); /* sidebar + header, the darkest plane */
+  --bg-primary: var(--gray-950); /* the content plane */
+  --bg-primary-hover: var(--gray-900);
+  --bg-primary-alt: #151518; /* inset controls: search, segmented tracks */
+  --bg-secondary: #151518; /* cards */
+  --bg-secondary-hover: var(--gray-800);
+  --bg-secondary-alt: #121214; /* table headers */
+  --bg-tertiary: var(--gray-800); /* raised: active segment, hover */
+  --bg-quaternary: #2c2c33;
+  --bg-active: var(--gray-800);
+  --bg-disabled: var(--gray-800);
+  --bg-overlay: #1c1c21;
+  --bg-brand-primary: var(--brand-500);
+  --bg-brand-secondary: var(--brand-600);
+  --bg-brand-solid: var(--brand-600);
+  --bg-brand-solid-hover: var(--brand-500);
+  --bg-error-primary: var(--error-500);
+  --bg-error-solid: var(--error-600);
+  /* Soft ring behind the not-wired dot so it reads on any surface. */
+  --bg-error-halo: rgb(240 68 56 / 0.22);
+  --bg-warning-primary: var(--warning-500);
+  --bg-success-primary: var(--success-500);
+
+  --text-primary: #fafafa;
+  --text-secondary: var(--gray-300);
+  --text-secondary-hover: var(--gray-200);
+  --text-tertiary: var(--gray-400);
+  --text-quaternary: var(--gray-500);
+  --text-placeholder: var(--gray-500);
+  --text-disabled: var(--gray-600);
+  --text-brand-primary: var(--brand-300);
+  --text-brand-secondary: var(--brand-400);
+  --text-error-primary: var(--error-400);
+  --text-warning-primary: var(--warning-400);
+  --text-success-primary: var(--success-400);
+  --text-on-brand: #ffffff;
+  /* Text on the white primary button. */
+  --text-on-solid: #0a0a0c;
+
+  /* Hairlines — barely there, which is what keeps the surfaces calm. */
+  --border-primary: #2a2a31;
+  --border-secondary: #1d1d22;
+  --border-tertiary: #18181c;
+  --border-disabled: var(--gray-700);
+  --border-brand: rgb(59 130 246 / 0.45);
+  --border-error: rgb(240 68 56 / 0.45);
+
+  --utility-gray-50: #1b1b20;
+  --utility-gray-200: #33333b;
+  --utility-gray-700: var(--gray-300);
+  --utility-brand-50: rgb(59 130 246 / 0.12);
+  --utility-brand-200: rgb(59 130 246 / 0.32);
+  --utility-brand-700: var(--brand-300);
+  --utility-error-50: rgb(240 68 56 / 0.12);
+  --utility-error-200: rgb(240 68 56 / 0.3);
+  --utility-error-700: var(--error-400);
+  --utility-warning-50: rgb(247 144 9 / 0.12);
+  --utility-warning-200: rgb(247 144 9 / 0.3);
+  --utility-warning-700: var(--warning-400);
+  --utility-success-50: rgb(23 178 106 / 0.12);
+  --utility-success-200: rgb(23 178 106 / 0.3);
+  --utility-success-700: var(--success-400);
+
+  /* Chart fills.
+     The UI ramp is tuned for small alert surfaces — badges, dots, borders —
+     where full saturation is the point. Spread across large filled areas on
+     this near-black surface it glares. These are the same three hues blended
+     ~30% toward the card background, which keeps the meaning (green good, red
+     bad, blue Cue) and drops the shout. The `-soft` pair is the same blend at
+     ~65%, for tracks and the unfilled part of a bullet. */
+  --chart-positive: #168351;
+  --chart-positive-soft: #164c35;
+  --chart-negative: #ae362e;
+  --chart-negative-soft: #622523;
+  --chart-accent: #3061b3;
+  --chart-accent-soft: #223b66;
+  --chart-track: #1f1f26;
+
+  /* Sequential ramp for parts-of-a-whole, ordered by size rather than kind. */
+  --chart-seq-1: #4a7cc4;
+  --chart-seq-2: #3f6cb0;
+  --chart-seq-3: #355c9a;
+  --chart-seq-4: #2c4d82;
+  --chart-seq-5: #26426d;
+  --chart-seq-6: #2b3a55;
+  --chart-seq-7: #333945;
+
+  --spacing-xxs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-lg: 12px;
+  --spacing-xl: 16px;
+  --spacing-2xl: 20px;
+  --spacing-3xl: 24px;
+  --spacing-4xl: 32px;
+
+  /* Radii run large — cards are 20px, controls 12px, anything pressable is a pill. */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 20px;
+  --radius-control: 12px;
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-error-400: var(--error-400);
+  --color-error-500: var(--error-500);
+  --color-warning-400: var(--warning-400);
+  --color-success-400: var(--success-400);
+  --color-success-500: var(--success-500);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+  --color-gray-950: var(--gray-950);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------------------------------------------------------------------------
+   Semantic utilities
+   --------------------------------------------------------------------------- */
+@utility bg-rail { background-color: var(--bg-rail); }
+@utility bg-primary { background-color: var(--bg-primary); }
+@utility bg-primary-alt { background-color: var(--bg-primary-alt); }
+@utility bg-secondary { background-color: var(--bg-secondary); }
+@utility bg-secondary-alt { background-color: var(--bg-secondary-alt); }
+@utility bg-tertiary { background-color: var(--bg-tertiary); }
+@utility bg-quaternary { background-color: var(--bg-quaternary); }
+@utility bg-active { background-color: var(--bg-active); }
+@utility bg-disabled { background-color: var(--bg-disabled); }
+@utility bg-overlay { background-color: var(--bg-overlay); }
+@utility bg-brand-solid { background-color: var(--bg-brand-solid); }
+@utility bg-brand-primary { background-color: var(--bg-brand-primary); }
+@utility bg-error-solid { background-color: var(--bg-error-solid); }
+
+@utility text-primary { color: var(--text-primary); }
+@utility text-secondary { color: var(--text-secondary); }
+@utility text-tertiary { color: var(--text-tertiary); }
+@utility text-quaternary { color: var(--text-quaternary); }
+@utility text-placeholder { color: var(--text-placeholder); }
+@utility text-disabled { color: var(--text-disabled); }
+@utility text-brand-primary { color: var(--text-brand-primary); }
+@utility text-error-primary { color: var(--text-error-primary); }
+@utility text-warning-primary { color: var(--text-warning-primary); }
+@utility text-success-primary { color: var(--text-success-primary); }
+@utility text-on-brand { color: var(--text-on-brand); }
+@utility text-on-solid { color: var(--text-on-solid); }
+
+@utility border-primary { border-color: var(--border-primary); }
+@utility border-secondary { border-color: var(--border-secondary); }
+@utility border-tertiary { border-color: var(--border-tertiary); }
+@utility border-brand { border-color: var(--border-brand); }
+@utility border-error { border-color: var(--border-error); }
+
+@utility ring-primary { --tw-ring-color: var(--border-primary); }
+
+/* The one card allowed to glow: a wash of accent from the top-left corner,
+   sitting on a slightly warmer panel than its neighbours. */
+@utility bg-feature {
+  background-image:
+    radial-gradient(
+      120% 130% at 0% 0%,
+      rgb(59 130 246 / 0.22) 0%,
+      rgb(59 130 246 / 0.05) 45%,
+      rgb(59 130 246 / 0) 70%
+    ),
+    linear-gradient(180deg, #17181d 0%, #131316 100%);
+}
+
+/* Depth is carried by very soft, very dark shadows, never by borders. */
+@utility shadow-xs-dark {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+}
+@utility shadow-card {
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.4),
+    0 8px 24px -12px rgb(0 0 0 / 0.6);
+}
+@utility shadow-lg-dark {
+  box-shadow:
+    0 12px 32px -8px rgb(0 0 0 / 0.7),
+    0 4px 8px -4px rgb(0 0 0 / 0.5);
+}
+@utility shadow-glow {
+  box-shadow:
+    0 0 0 1px rgb(59 130 246 / 0.18),
+    0 16px 40px -20px rgb(59 130 246 / 0.5);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-rail);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
 }
