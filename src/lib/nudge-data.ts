@@ -255,14 +255,6 @@ export const INTENTS: Record<IntentKey, Intent> = {
   },
 };
 
-export const INTENT_ORDER: IntentKey[] = [
-  "size",
-  "bracketing",
-  "fit",
-  "return_risk",
-  "fabric",
-  "comparison",
-];
 
 /**
  * One row of `nudge_shown_log`, column for column, with the `outcome` JSONB
@@ -542,6 +534,13 @@ export function resolutionOf(firing: NudgeFiring): {
 /** Aggregate per intent — what a rollup over nudge_shown_log would return. */
 export interface IntentPerformance {
   intent: IntentKey;
+  /**
+   * Net revenue attributable to settling this question — the same
+   * holdout-based figure the overview totals, split by intent. This is what
+   * the intents doc asks for and nothing has produced until now: a ranking by
+   * what each confusion actually costs, rather than by how loud it is.
+   */
+  worth: number;
   shown: number;
   engaged: number;
   actionClicked: number;
@@ -551,13 +550,27 @@ export interface IntentPerformance {
 }
 
 export const INTENT_PERFORMANCE: IntentPerformance[] = [
-  { intent: "size", shown: 4218, engaged: 1904, actionClicked: 1142, dismissed: 386, resolved: 2871, suppressed: 6104 },
-  { intent: "bracketing", shown: 612, engaged: 318, actionClicked: 96, dismissed: 148, resolved: 214, suppressed: 402 },
-  { intent: "fit", shown: 2106, engaged: 1088, actionClicked: 704, dismissed: 201, resolved: 1402, suppressed: 2988 },
-  { intent: "return_risk", shown: 1877, engaged: 602, actionClicked: 88, dismissed: 174, resolved: 1341, suppressed: 3110 },
-  { intent: "fabric", shown: 488, engaged: 194, actionClicked: 61, dismissed: 122, resolved: 208, suppressed: 736 },
-  { intent: "comparison", shown: 244, engaged: 91, actionClicked: 0, dismissed: 63, resolved: 47, suppressed: 118 },
+  { intent: "size", worth: 6500, shown: 4218, engaged: 1904, actionClicked: 1142, dismissed: 386, resolved: 2871, suppressed: 6104 },
+  { intent: "return_risk", worth: 3150, shown: 1877, engaged: 602, actionClicked: 88, dismissed: 174, resolved: 1341, suppressed: 3110 },
+  { intent: "fit", worth: 2820, shown: 2106, engaged: 1088, actionClicked: 704, dismissed: 201, resolved: 1402, suppressed: 2988 },
+  { intent: "fabric", worth: 900, shown: 488, engaged: 194, actionClicked: 61, dismissed: 122, resolved: 208, suppressed: 736 },
+  { intent: "bracketing", worth: 620, shown: 612, engaged: 318, actionClicked: 96, dismissed: 148, resolved: 214, suppressed: 402 },
+  { intent: "comparison", worth: 210, shown: 244, engaged: 91, actionClicked: 0, dismissed: 63, resolved: 47, suppressed: 118 },
 ];
+
+/**
+ * Ranked by what settling each question is worth, not by a fixed taxonomy
+ * order. The ranking is the finding: it reorders as the store changes, and it
+ * is what decides which of the six are worth keeping.
+ */
+export const INTENTS_BY_WORTH: IntentPerformance[] = [...INTENT_PERFORMANCE].sort(
+  (a, b) => b.worth - a.worth,
+);
+
+/** Shown, minus the ones where the hesitation carried on afterwards. */
+export function leftUnsettled(perf: IntentPerformance): number {
+  return Math.max(0, perf.shown - perf.resolved);
+}
 
 /**
  * suppression_log grouped by reason. Rule names are the backend's own, so a

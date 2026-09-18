@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { CloseButton, Drawer, Section } from "@/components/app/nudge-panel";
 import { Badge } from "@/components/base/badge";
+import { formatCurrency } from "@/lib/merchant-data";
 import {
   FIRINGS,
+  leftUnsettled,
   type Intent,
   type IntentPerformance,
   resolutionOf,
@@ -61,28 +63,28 @@ export function IntentPanel({
       <div className="flex-1 overflow-y-auto">
         <section className="grid grid-cols-2 gap-px border-b border-secondary bg-[var(--border-secondary)]">
           <Figure
+            label="Worth settling"
+            value={formatCurrency(performance.worth)}
+            sub="net revenue, against the held-back group"
+          />
+          <Figure
             label="Shown"
             value={performance.shown.toLocaleString()}
             sub="rows in nudge_shown_log"
           />
           <Figure
-            label="Stayed quiet"
-            value={performance.suppressed.toLocaleString()}
-            sub="rows in suppression_log"
-          />
-          <Figure
-            label="Engaged"
-            value={pct(performance.engaged, performance.shown)}
-            sub="expanded or used the action"
-          />
-          <Figure
-            label="Stopped being stuck"
+            label="Settled it"
             value={pct(performance.resolved, performance.shown)}
             sub="from the post_nudge_* events"
           />
+          <Figure
+            label="Left unsettled"
+            value={leftUnsettled(performance).toLocaleString()}
+            sub="still hesitating afterwards"
+          />
         </section>
 
-        <Section title="What Cue says">
+        <Section title="For example, Cue says">
           <blockquote className="border-l-2 border-primary pl-3 text-[13px] leading-relaxed text-primary">
             {intent.example}
           </blockquote>

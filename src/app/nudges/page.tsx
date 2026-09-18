@@ -8,20 +8,22 @@ import { Badge } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
 import { MetricCard } from "@/components/base/metric-card";
+import { InfoTip } from "@/components/base/info-tip";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { cx } from "@/lib/cx";
 import {
   FIRINGS,
   type IntentKey,
-  INTENT_ORDER,
   INTENT_PERFORMANCE,
+  INTENTS_BY_WORTH,
+  leftUnsettled,
   INTENTS,
   resolutionOf,
   NUDGE_TOTALS,
   SUPPRESSION_REASONS,
   SUPPRESSION_TOTAL,
 } from "@/lib/nudge-data";
-import { STORE } from "@/lib/merchant-data";
+import { formatCurrency, METRIC_NOTES, STORE } from "@/lib/merchant-data";
 
 type Filter = "all" | "resolved" | "unresolved";
 
@@ -78,7 +80,6 @@ export default function NudgesPage() {
         <MetricCard
           label="Questions settled"
           value={pct(totalResolved, NUDGE_TOTALS.shown)}
-          emphasis
           hint={`In ${totalResolved.toLocaleString()} of ${NUDGE_TOTALS.shown.toLocaleString()} answers, the behaviour that triggered it stopped afterwards.`}
         />
         <MetricCard
@@ -102,34 +103,55 @@ export default function NudgesPage() {
         />
       </div>
 
-      {/* What shoppers are unsure about — the six intents, in merchant words */}
+      {/*
+        Ranked by what settling each question is worth, not by a fixed
+        taxonomy order. A list that never reorders is a configuration screen;
+        the ranking is what makes this a finding — it is the intents doc's own
+        "rank by what each confusion costs" argument, produced from data.
+
+        Example copy is deliberately not a column: there is one sample line
+        per question, identical across every product and wording variant, and
+        as a column it reads as the live copy. It lives in the panel instead,
+        labelled as an example.
+      */}
       <Card>
         <CardHeader
-          title="What shoppers are unsure about"
-          description="Six things Cue watches for. Whether answering each one settles it is the only measure that matters."
+          title="What Cue answers"
+          description="Six kinds of question, ranked by what settling them is worth. The ones near the bottom are the ones to reconsider."
         />
         <Table>
           <thead>
             <tr>
-              <Th className="w-[30%]">Question</Th>
-              <Th className="w-[28%]">An answer Cue gives</Th>
+              <Th className="w-[38%]">Question</Th>
+              <Th className="text-right">
+                <span className="inline-flex items-center gap-1.5">
+                  Worth settling
+                  <InfoTip
+                    label={METRIC_NOTES.intentWorth.label}
+                    align="right"
+                  >
+                    {METRIC_NOTES.intentWorth.body}
+                  </InfoTip>
+                </span>
+              </Th>
               <Th className="text-right">Shown</Th>
               <Th className="text-right">Settled it</Th>
-              <Th className="text-right">Held back</Th>
+              <Th className="text-right">Left unsettled</Th>
               <Th className="w-10" />
             </tr>
           </thead>
           <tbody>
-            {INTENT_ORDER.map((key) => {
-              const intent = INTENTS[key];
-              const perf = INTENT_PERFORMANCE.find((p) => p.intent === key)!;
-              const settledShare = perf.shown === 0 ? 0 : perf.resolved / perf.shown;
+            {INTENTS_BY_WORTH.map((perf) => {
+              const intent = INTENTS[perf.intent];
+              const settledShare =
+                perf.shown === 0 ? 0 : perf.resolved / perf.shown;
+              const unsettled = leftUnsettled(perf);
 
               return (
                 <Tr
-                  key={key}
-                  onClick={() => setSelectedIntent(key)}
-                  selected={key === selectedIntent}
+                  key={perf.intent}
+                  onClick={() => setSelectedIntent(perf.intent)}
+                  selected={perf.intent === selectedIntent}
                 >
                   <Td>
                     <p className="text-[13px] font-medium text-primary">
@@ -139,17 +161,10 @@ export default function NudgesPage() {
                       {intent.behaviour}
                     </p>
                   </Td>
-                  <Td>
-                    <p className="text-[13px] leading-relaxed text-secondary">
-                      {intent.example}
-                    </p>
-                    {intent.action && (
-                      <p className="mt-1 text-[11px] text-quaternary">
-                        with a link to {intent.action.toLowerCase()}
-                      </p>
-                    )}
-                  </Td>
                   <Td className="text-right align-middle font-medium text-primary tabular-nums">
+                    {formatCurrency(perf.worth)}
+                  </Td>
+                  <Td className="text-right align-middle text-secondary tabular-nums">
                     {perf.shown === 0 ? "—" : perf.shown.toLocaleString()}
                   </Td>
                   <Td className="align-middle">
@@ -182,15 +197,11 @@ export default function NudgesPage() {
                     )}
                   </Td>
                   <Td className="text-right align-middle">
-                    <p className="text-secondary tabular-nums">
-                      {perf.suppressed === 0
-                        ? "—"
-                        : perf.suppressed.toLocaleString()}
+                    <p className="font-medium text-primary tabular-nums">
+                      {unsettled === 0 ? "—" : unsettled.toLocaleString()}
                     </p>
                     <p className="mt-0.5 text-[11px] text-quaternary">
-                      {intent.silenceRules.length === 0
-                        ? "no hold-back rule"
-                        : `${intent.silenceRules.length} rule${intent.silenceRules.length === 1 ? "" : "s"}`}
+                      still hesitating
                     </p>
                   </Td>
                   <Td className="text-right align-middle">

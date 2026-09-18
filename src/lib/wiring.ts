@@ -110,12 +110,6 @@ export const WIRING = {
       "Needs a nudged-versus-holdout comparison of order value per session, and Shopify's order webhooks carry no session_id — an order cannot be traced back to the arm the shopper was in. product_orders gives real revenue per product, but not per session, so no causal difference can be taken.",
     fix: "Write session_id into a cart note attribute at add-to-cart, read it back off ORDERS_CREATE, then group order value by holdout arm.",
   },
-  gapsClosed: {
-    wired: false,
-    reason:
-      "Nothing records that an answer was promoted onto a product page, and insight rows are per-period snapshots with no comparison against the preceding window. Both are needed before a drop in demand can be attributed to a page edit.",
-    fix: "Add a promotion record, then diff each friction point's demand against the period before it.",
-  },
   revenueAtRisk: {
     wired: false,
     reason:

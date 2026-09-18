@@ -201,15 +201,6 @@ export const REVENUE = {
   holdoutReturnRate: 0.147,
   averageOrderValue: 128,
 
-  /**
-   * Revenue recovered because the merchant put an answer on the page and the
-   * question stopped being asked. This is the product working as intended —
-   * demand falling rather than a card being shown forever — so it is counted
-   * separately from anything Cue earned by speaking.
-   */
-  gapsClosedValue: 6840,
-  /** Friction points retired this period by a page edit. */
-  gapsClosed: 3,
 } as const;
 
 /** Sales lift plus returns avoided. The headline. */

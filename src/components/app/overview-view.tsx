@@ -1,9 +1,12 @@
+import {
+  CircleDollarSign,
+  MessageCircleQuestion,
+  TriangleAlert,
+} from "lucide-react";
 import { MetricCard } from "@/components/base/metric-card";
-import { DotGrid, MiniBar } from "@/components/base/mini-viz";
 import { NudgeFunnel } from "@/components/app/overview-funnel";
 import { SuppressionBreakdown } from "@/components/app/overview-suppression";
-import { TopicDemandChart } from "@/components/app/overview-topic-chart";
-import { TopFrictionPoints } from "@/components/app/overview-top-points";
+import { DemandBreakdown } from "@/components/app/overview-demand";
 import {
   formatCurrency,
   type FrictionPoint,
@@ -12,6 +15,7 @@ import {
   STORE,
 } from "@/lib/merchant-data";
 import {
+  formatCount,
   formatShare,
   netRevenueAdded,
   REVENUE,
@@ -62,10 +66,14 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
       ) : (
         <>
           {/*
-            Earned, still to earn, already fixed. Every money figure is a
-            difference against the held-back group, never a total over nudged
-            sessions — a shopper who saw a card and bought would very often
-            have bought anyway. See the REVENUE block in lib/overview-data.ts.
+            Earned, still to earn, and the demand behind both. The two money
+            figures are differences against the held-back group, never totals
+            over nudged sessions — a shopper who saw a card and bought would
+            very often have bought anyway. See lib/overview-data.ts.
+
+            The third card is a count, and it is the one that should fall. A
+            question that stops being asked has been answered on the page, so
+            its own trend is the product working.
 
             Sales lift and returns avoided are one card, not two: returns
             avoided is part of net revenue added, so showing them side by side
@@ -74,28 +82,12 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Net revenue added"
+              icon={CircleDollarSign}
               value={formatCurrency(netAdded)}
-              emphasis
               info={{
                 label: METRIC_NOTES.netRevenueAdded.label,
                 body: METRIC_NOTES.netRevenueAdded.body,
               }}
-              visual={
-                <MiniBar
-                  segments={[
-                    {
-                      value: REVENUE.liftFromSales,
-                      className: "bg-[var(--chart-positive)]",
-                      label: `${formatCurrency(REVENUE.liftFromSales)} from sales that closed`,
-                    },
-                    {
-                      value: REVENUE.liftFromFewerReturns,
-                      className: "bg-[var(--chart-accent)]",
-                      label: `${formatCurrency(REVENUE.liftFromFewerReturns)} from returns that did not happen`,
-                    },
-                  ]}
-                />
-              }
               hint={
                 <>
                   {formatCurrency(REVENUE.liftFromSales)} from extra sales, plus{" "}
@@ -109,46 +101,31 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
             />
             <MetricCard
               label="Revenue at risk"
+              icon={TriangleAlert}
               value={formatCurrency(atRisk)}
               lowerIsBetter
               info={{
                 label: METRIC_NOTES.revenueAtRisk.label,
                 body: METRIC_NOTES.revenueAtRisk.body,
               }}
-              visual={
-                <DotGrid
-                  total={s.frictionPointCount}
-                  filled={s.uncoveredCount}
-                  label={`${s.uncoveredCount} of ${s.frictionPointCount} friction points have no answer on the page.`}
-                />
-              }
               hint={`Behind ${s.uncoveredCount} questions your pages cannot answer, so Cue stays silent on all of them. This is the work list.`}
             />
             <MetricCard
-              label="Recovered by fixing pages"
-              value={formatCurrency(REVENUE.gapsClosedValue)}
+              label="Questions shoppers asked"
+              icon={MessageCircleQuestion}
+              value={formatCount(s.stuckEncounters)}
+              lowerIsBetter
+              change={
+                s.demand
+                  ? { value: s.demand.value, direction: s.demand.direction }
+                  : undefined
+              }
               info={{
-                label: METRIC_NOTES.gapsClosed.label,
-                body: METRIC_NOTES.gapsClosed.body,
+                label: METRIC_NOTES.demandAnswered.label,
+                body: METRIC_NOTES.demandAnswered.body,
                 align: "right",
               }}
-              visual={
-                <MiniBar
-                  segments={[
-                    {
-                      value: REVENUE.gapsClosedValue,
-                      className: "bg-[var(--chart-positive)]",
-                      label: "Questions answered on the page",
-                    },
-                    {
-                      value: atRisk,
-                      className: "bg-[var(--chart-track)]",
-                      label: "Still unanswered",
-                    },
-                  ]}
-                />
-              }
-              hint={`${REVENUE.gapsClosed} questions stopped being asked after you added the answer. Cue no longer has to speak for them.`}
+              hint={`${formatShare(s.resolvedShare)} were answered on the spot. ${s.movement.falling} of ${s.frictionPointCount} questions are being asked less than last period — falling is the goal.`}
             />
           </section>
 
@@ -158,9 +135,7 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
             only part a merchant can act on, so it comes before the breakdowns
             that explain it.
           */}
-          <TopFrictionPoints points={s.topPoints} />
-
-          <TopicDemandChart rows={s.topicDemand} />
+          <DemandBreakdown points={s.topPoints} topics={s.topicDemand} />
 
           <section className="grid gap-4 lg:grid-cols-5">
             <div className="lg:col-span-2">

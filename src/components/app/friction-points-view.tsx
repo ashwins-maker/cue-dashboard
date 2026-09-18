@@ -17,6 +17,7 @@ import {
   formatPercent,
   type FrictionPoint,
   METRIC_NOTES,
+  PERIOD_COMPARISON,
   revenueAtRisk,
   revenueAtRiskTotal,
   type SignalSource,
@@ -91,7 +92,6 @@ export function FrictionPointsView({
         <MetricCard
           label="Revenue at risk"
           value={formatCurrency(atRisk)}
-          emphasis
           change={{ value: "18%", direction: "up" }}
           lowerIsBetter
           info={METRIC_NOTES.revenueAtRisk}
@@ -156,6 +156,9 @@ export function FrictionPointsView({
                   <InfoTip label={METRIC_NOTES.sessions.label}>
                     {METRIC_NOTES.sessions.body}
                   </InfoTip>
+                </span>
+                <span className="block font-normal text-quaternary normal-case">
+                  and change {PERIOD_COMPARISON}
                 </span>
               </Th>
               <Th>Your page</Th>

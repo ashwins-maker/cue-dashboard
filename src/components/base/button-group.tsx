@@ -8,6 +8,14 @@ export interface ButtonGroupOption<T extends string> {
   count?: number;
 }
 
+/**
+ * Underlined tabs rather than a pill segment.
+ *
+ * A pill reads as a filter applied to one dataset; an underline reads as a
+ * change of view. Both places this is used are switching between views of
+ * the same rows, so the underline is the honest affordance — and it stops
+ * the control competing with the buttons beside it in a card header.
+ */
 export function ButtonGroup<T extends string>({
   options,
   value,
@@ -18,30 +26,29 @@ export function ButtonGroup<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="inline-flex rounded-full border border-secondary bg-primary-alt p-0.5">
+    <div role="tablist" className="inline-flex items-center gap-4">
       {options.map((option) => {
         const selected = option.value === value;
         return (
           <button
             key={option.value}
             type="button"
+            role="tab"
+            aria-selected={selected}
             onClick={() => onChange(option.value)}
-            aria-pressed={selected}
             className={cx(
-              "inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors",
+              "relative -mb-px cursor-pointer border-b-2 px-0.5 pt-1 pb-2 text-xs font-medium whitespace-nowrap transition-colors",
               selected
-                ? "bg-quaternary text-primary shadow-xs-dark"
-                : "text-tertiary hover:text-secondary",
+                ? "border-brand-solid text-primary"
+                : "border-transparent text-tertiary hover:text-secondary",
             )}
           >
             {option.label}
             {option.count !== undefined && (
               <span
                 className={cx(
-                  "rounded-full px-1.5 py-px text-[11px] font-medium tabular-nums",
-                  selected
-                    ? "bg-quaternary text-secondary"
-                    : "bg-tertiary text-tertiary",
+                  "ml-1.5 tabular-nums",
+                  selected ? "text-tertiary" : "text-quaternary",
                 )}
               >
                 {option.count}

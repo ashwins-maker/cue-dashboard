@@ -101,6 +101,16 @@ export const STORE = {
 };
 
 /**
+ * What every change indicator is measured against.
+ *
+ * An arrow and a percentage on their own are an assertion with no baseline —
+ * "+18%" against last month, last week, or target reads identically and means
+ * three different things. Derived from STORE.period so the two can never
+ * disagree.
+ */
+export const PERIOD_COMPARISON = `vs previous ${STORE.period.replace(/^Last /, "")}`;
+
+/**
  * One entry per soft metric. `label` says what the number IS in plain words;
  * `body` says how it is worked out and the single caveat that matters. Kept
  * in one place so the same explanation cannot drift between screens.
@@ -110,9 +120,13 @@ export const METRIC_NOTES = {
     label: "Measured against a held-back group",
     body: "A random slice of shoppers never sees Cue at all. We compare revenue per session between the two groups and multiply the difference by the number who did see it, so sales that would have happened anyway are not counted. Returns are netted off, because a sale that comes back is not a win — the held-back group returns more often, and that gap is part of this figure rather than additional to it. Not yet measured: an order carries no record of which group the shopper was in.",
   },
-  gapsClosed: {
-    label: "Questions that stopped being asked",
-    body: "When an answer goes onto the product page, shoppers stop hesitating over it and Cue stops needing to speak. We price the drop in demand the same way as revenue at risk. This is your own work paying off, not Cue's. Not yet measured: nothing records that an answer was promoted onto a page.",
+  intentWorth: {
+    label: "What settling this question is worth",
+    body: "Net revenue added, split by the question that triggered the card. Same held-back comparison as the overview total, so the six add up to it. The ranking is the point: a question shoppers ask often is not automatically the one worth answering. Not yet measured: an order carries no record of which group the shopper was in, or which question they had.",
+  },
+  demandAnswered: {
+    label: "How often shoppers got stuck, and how often it was settled",
+    body: "One count per visit where a shopper hesitated over something, no matter how many times it happened in that visit. The share is how often Cue answered and the hesitation stopped — they stopped flipping sizes, reopening the size chart, or hunting for the returns policy. The count falling is the goal: a question that stops being asked has been answered on the page.",
   },
   revenueAtRisk: {
     label: "Sales you are probably losing",
