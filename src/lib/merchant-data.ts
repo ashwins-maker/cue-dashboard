@@ -99,9 +99,9 @@ export interface FrictionPoint {
  * still renders: it falls back to a monogram and shows no id, which is the
  * honest result for a product the catalog sync has not reached.
  *
- * Images are placeholder stock, seeded so each product looks the same on
- * every screen. Shopify's catalog sync stores no image URL today, so these
- * stand in for the real `featuredImage` until it does.
+ * Images are stock denim photographs standing in for the real
+ * `featuredImage`, which Shopify's catalog sync does not store today. Square
+ * crops at twice the rendered size, so they stay sharp on a retina display.
  */
 export const PRODUCT_CATALOG: Record<
   string,
@@ -109,15 +109,15 @@ export const PRODUCT_CATALOG: Record<
 > = {
   "Mid-Rise Straight Jean": {
     id: "gid://shopify/Product/1001",
-    image: "https://picsum.photos/seed/cue-denim-1001/96/96",
+    image: "https://images.unsplash.com/photo-1602293589930-45aad59ba3ab?w=96&h=96&fit=crop",
   },
   "High-Rise Wide Leg Jean": {
     id: "gid://shopify/Product/1002",
-    image: "https://picsum.photos/seed/cue-denim-1002/96/96",
+    image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=96&h=96&fit=crop",
   },
   "Skinny Stretch Jean": {
     id: "gid://shopify/Product/1003",
-    image: "https://picsum.photos/seed/cue-denim-1003/96/96",
+    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=96&h=96&fit=crop",
   },
 };
 
