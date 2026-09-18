@@ -1,19 +1,10 @@
-import { CircleDollarSign, MessageCircleQuestion } from "lucide-react";
-import { MetricCard } from "@/components/base/metric-card";
 import { DemandBreakdown } from "@/components/app/overview-demand";
 import { NudgeToOrder } from "@/components/app/overview-journey";
 import { MessagesTable } from "@/components/app/overview-messages";
 import { RevenueHeadline } from "@/components/app/overview-revenue";
 import { WeeklyConversion } from "@/components/app/overview-weekly";
 import { type FrictionPoint, STORE } from "@/lib/merchant-data";
-import {
-  ARMS,
-  formatCount,
-  formatShare,
-  REVENUE,
-  summariseOverview,
-} from "@/lib/overview-data";
-import { NUDGE_TOTALS } from "@/lib/nudge-data";
+import { summariseOverview } from "@/lib/overview-data";
 
 /**
  * The overview screen.
@@ -56,54 +47,7 @@ export function OverviewView({ points }: { points: FrictionPoint[] }) {
         <>
           <RevenueHeadline />
 
-          {/*
-            The four rates that sit under the money. Add to cart and conversion
-            carry their holdout counterpart inline rather than as a separate
-            card: the pair is the claim, and splitting them invites reading the
-            nudged rate on its own.
-          */}
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Nudges shown"
-              icon={MessageCircleQuestion}
-              value={formatCount(REVENUE.nudgedSessions)}
-              hint={`Across ${formatCount(s.sessionsObserved)} visits. One shopper in ${Math.round(s.visitsPerNudge)} sees a card at all.`}
-            />
-            <MetricCard
-              label="Engaged with it"
-              value={formatShare(
-                s.nudgesShown > 0 ? NUDGE_TOTALS.engaged / s.nudgesShown : 0,
-              )}
-              hint={`${formatCount(NUDGE_TOTALS.engaged)} shoppers expanded a card or used its action.`}
-            />
-            <MetricCard
-              label="Added to cart"
-              value={formatShare(ARMS.addedToCartNudged)}
-              change={{
-                value: formatShare(
-                  ARMS.addedToCartNudged / ARMS.addedToCartHoldout - 1,
-                ),
-                direction: "up",
-                comparison: "against holdout",
-              }}
-              hint={`${formatShare(ARMS.addedToCartHoldout)} among the shoppers Cue was held back from.`}
-            />
-            <MetricCard
-              label="Placed an order"
-              icon={CircleDollarSign}
-              value={formatShare(ARMS.convertedNudged)}
-              change={{
-                value: formatShare(
-                  ARMS.convertedNudged / ARMS.convertedHoldout - 1,
-                ),
-                direction: "up",
-                comparison: "against holdout",
-              }}
-              hint={`${formatShare(ARMS.convertedHoldout)} among the shoppers Cue was held back from.`}
-            />
-          </section>
-
-          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          <section className="grid gap-4 lg:grid-cols-2">
             <WeeklyConversion />
             <NudgeToOrder />
           </section>
