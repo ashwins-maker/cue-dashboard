@@ -25,7 +25,7 @@ export function RevenueHeadline() {
 
   return (
     <section className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]">
-      <div className="rounded-card border border-brand bg-feature p-6 shadow-glow">
+      <div className="rounded-card border border-secondary bg-feature p-6 shadow-card">
         <p className="text-[11px] font-semibold tracking-[0.08em] text-brand-secondary uppercase">
           Revenue recovered
         </p>
