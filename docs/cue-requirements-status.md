@@ -17,6 +17,27 @@ migrations, or the emitted-event list — not against the repo's own docs.
 
 ---
 
+## Update — 2026-09-18, re-audited against `171d4e3`
+
+One further commit, built directly off this repo's
+[`cue-required-items.md`](./cue-required-items.md) — its migrations cite the
+audit items by number.
+
+| Item | What shipped |
+|---|---|
+| **D1–D4** — four dead signals | `0015_wire_dead_signals.sql`. `zoom → size_guide` (2+ zooms), `colour_variant_change → reassurance` (2+ changes), `scroll_reversal → size_guide` (3+ reversals), `multi_tab_same_product → reassurance`. All four were emitted and captured before this; none could fire a card |
+| **C2** — signal provenance in the rollup | `0016` adds `nudge_performance_insights.triggering_signals TEXT[]`, the distinct set of signal types behind each insight row |
+| **A2** — `checkout_started` | Emitted on the real checkout click, with `cartValue` and `itemCount` |
+| **A3** — `cart_remove` | Emitted, with size-swap sources excluded |
+| Evidence trail | `card_content` now returns `sourceChunkIds`, so a generated line traces back to the store content it was built from |
+
+**Fabric fires now, but has no card of its own.** `zoom` is gated on 2+ zooms and
+serves the generic `size_guide`. Same for colour, which serves `reassurance`.
+The intent rows below that read "not built" for fabric are corrected: detection
+and content both exist; only a dedicated card type is missing.
+
+---
+
 ## Update — 2026-09-18, re-audited against `e1f02b2`
 
 Two commits since the `ac99dce` baseline closed five of the twelve gaps below.
@@ -69,7 +90,7 @@ cost — still cannot be run.
 |---|---|---|---|---|---|---|
 | 1 | **Size uncertainty** | `variant_change` (carries `changeCountInWindow`), `review_filter_applied`, `size_chart_unit_toggle`, `text_selection`, `dwell`, `accordion_open` | "Returns to a size already tried" — no repeat-size tracking. `filter_applied` (collection filtered by size) is **not emitted** | ✅ six rules → `size_guide`. Window tightened in `0010` | ✅ size chart, fit-tagged reviews, exchange reasons | ✅ **Built** |
 | 2 | **Fit / shape** | `size_guide_open`, `size_guide_close`, `dwell`, `scroll_reversal` | `video_engagement` not emitted | ⚠️ `size_guide_close`→`reassurance`, `dwell`→`size_guide`. **`scroll_reversal` is emitted but routes nowhere** | ✅ metafields synced; model height / worn size depends on the merchant populating them | ⚠️ **Built, one dead signal** |
-| 3 | **Material / fabric** | `zoom`, `text_selection`, `accordion_open` | `pinch_zoom` not emitted | ❌ **`zoom` has no rule. No `fabric` card type exists** | ✅ composition + care synced; stretch/rigid reviews available | ❌ **Not built** |
+| 3 | **Material / fabric** | `zoom`, `text_selection`, `accordion_open` | `pinch_zoom` not emitted | ⚠️ four rules, `zoom` wired in `0015` on 2+ zooms. **No `fabric` card type, so it serves the generic size card** | ✅ composition + care synced; stretch/rigid reviews available | ⚠️ **Fires, generic copy** |
 | 4 | **Return risk** | `policy_page_nav` (with the `returnedToProduct` boolean — the "and comes back" check, fixed in `0008`), `cart_dwell_before_checkout`, `checkout_back_to_pdp`, `atc_hover_no_click`, `atc_approach_count` | — | ✅ five rules → `shipping_info` / `reassurance` | ✅ returns policy parsed and fed into card generation | ✅ **Fully built** — best covered of the six |
 | 5 | **Bracketing** | `multi_size_cart`, `quantity_increase_same_item`, `cart_size_swap` | — | ✅ all three → `size_guide` | ⚠️ routes to the **generic** size card. No size-delta copy ("the 30 is 1in wider at the waist") | ⚠️ **Detection built, copy missing** |
 | 6 | **Comparison** | `product_comparison`, `multi_tab_compare`, `multi_tab_same_product`, `tab_switch_cadence` | `collection_pdp_loop` not emitted | ⚠️ two rules → `reassurance`. `multi_tab_same_product` routes nowhere. **A `/compare` endpoint exists**, plus in-chat side-by-side | ⚠️ no shared-fields-only rule, no comparability test, no dedicated comparison card type | ⚠️ **Tracking built, rules are the gap** |

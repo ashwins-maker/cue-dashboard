@@ -113,12 +113,14 @@ export const INTENTS: Record<IntentKey, Intent> = {
         cardType: "size_guide",
         condition: "blockType is description and 5s+",
       },
+      {
+        signal: "scroll_reversal",
+        cardType: "size_guide",
+        condition: "3+ scroll-backs to re-read a section",
+      },
     ],
     silenceRules: ["repeat_buyer_same_fit", "assistive_tech_active"],
-    notImplemented: [
-      "Scrolls back to re-read — no signal exists",
-      "Replays the product video — no signal exists",
-    ],
+    notImplemented: ["Replays the product video — no signal exists"],
     winsWhen: "The hunting stops and a size is chosen",
   },
   fabric: {
@@ -144,11 +146,16 @@ export const INTENTS: Record<IntentKey, Intent> = {
         cardType: "size_guide",
         condition: "description dwell also catches fabric-adjacent reading",
       },
+      {
+        signal: "zoom",
+        cardType: "size_guide",
+        condition: "2+ zooms of the fabric inside the window",
+      },
     ],
     silenceRules: [],
     notImplemented: [
       "Pinch-zoom — only click-zoom is tracked",
-      "zoom is tracked but wired to no rule at all",
+      "No fabric card type, so zoom serves the generic size card",
       "Review-mined stretch and rigidity as a dedicated trigger",
     ],
     winsWhen: "The fabric zooming stops",
@@ -164,7 +171,7 @@ export const INTENTS: Record<IntentKey, Intent> = {
       {
         signal: "policy_page_nav",
         cardType: "shipping_info",
-        condition: "returnedToProduct is true — she actually came back",
+        condition: "returnedToProduct is true — they actually came back",
       },
       {
         signal: "cart_dwell_before_checkout",
@@ -233,6 +240,11 @@ export const INTENTS: Record<IntentKey, Intent> = {
         signal: "multi_tab_compare",
         cardType: "reassurance",
         condition: "cross-tab, via BroadcastChannel",
+      },
+      {
+        signal: "multi_tab_same_product",
+        cardType: "reassurance",
+        condition: "same product in two tabs, at different sizes",
       },
     ],
     silenceRules: [],
