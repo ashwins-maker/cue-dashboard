@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CatalogCoverage } from "@/components/app/catalog-coverage";
+import { StatBand } from "@/components/base/stat-band";
 import { FrictionPanel } from "@/components/app/friction-panel";
 import { Badge, type BadgeColor } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
@@ -78,41 +79,21 @@ export function FrictionPointsView({ points }: { points: FrictionPoint[] }) {
       </div>
 
       {/*
-        One full-width band rather than a headline card and a companion. The
-        supporting counts sit beside the money instead of under it, so the
-        row reads left to right as one sentence: this much is at stake, across
-        this many questions, this many of which you cannot answer at all.
-
         "Potential" is doing real work in the label. The figure is a
         conversion gap multiplied by a price — an association, not money a
         merchant would be handed back — and the tooltip carries the rest.
       */}
-      <section className="rounded-card border border-secondary bg-feature p-6 shadow-card">
-        <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6">
-          <div className="min-w-0">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.08em] text-brand-secondary uppercase">
-              Potential revenue at risk
-              <InfoTip label={METRIC_NOTES.revenueAtRisk.label}>
-                {METRIC_NOTES.revenueAtRisk.body}
-              </InfoTip>
-            </p>
-            <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-1">
-              <span className="text-[40px] leading-none font-semibold tracking-[-0.03em] text-primary tabular-nums">
-                {formatCurrency(atRisk)}
-              </span>
-              <span className="max-w-[13rem] text-xs leading-snug text-tertiary">
-                across the questions your pages cannot answer
-              </span>
-            </div>
-          </div>
-
-          <dl className="flex flex-wrap items-center gap-x-10 gap-y-5">
-            <HeroStat label="Questions open" value={String(ranked.length)} />
-            <HeroStat label="You can't answer" value={String(uncoveredCount)} />
-            <HeroStat label="Fixed this period" value="7" />
-          </dl>
-        </div>
-      </section>
+      <StatBand
+        label="Potential revenue at risk"
+        info={METRIC_NOTES.revenueAtRisk}
+        value={formatCurrency(atRisk)}
+        caption="across the questions your pages cannot answer"
+        stats={[
+          { label: "Questions open", value: String(ranked.length) },
+          { label: "You can't answer", value: String(uncoveredCount) },
+          { label: "Fixed this period", value: "7" },
+        ]}
+      />
 
       <Card>
         <CardHeader
@@ -308,16 +289,5 @@ function FrictionRow({
         />
       </Td>
     </Tr>
-  );
-}
-
-function HeroStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[11px] text-tertiary">{label}</dt>
-      <dd className="mt-1 text-[17px] leading-none font-semibold text-primary tabular-nums">
-        {value}
-      </dd>
-    </div>
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IntentPanel } from "@/components/app/intent-panel";
 import { NudgePanel } from "@/components/app/nudge-panel";
 import { Badge } from "@/components/base/badge";
 import { ButtonGroup } from "@/components/base/button-group";
 import { Card, CardHeader } from "@/components/base/card";
-import { MetricCard } from "@/components/base/metric-card";
+import { StatBand } from "@/components/base/stat-band";
 import { InfoTip } from "@/components/base/info-tip";
 import { Table, Td, Th, Tr } from "@/components/base/table";
 import { cx } from "@/lib/cx";
@@ -74,43 +74,50 @@ export default function NudgesPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {/*
-          Outcome first. "Nudges shown" led this row before, which is a volume
-          figure a restraint-led product should never celebrate — speaking more
-          is not the goal, and a merchant reading it top-left learns nothing
-          about whether any of it worked.
-        */}
-        <MetricCard
-          label="Added to cart"
-          icon={ShoppingCart}
-          value={formatShare(ARMS.addedToCartNudged)}
-          change={{
-            value: formatShare(
-              ARMS.addedToCartNudged / ARMS.addedToCartHoldout - 1,
+      {/*
+        Add to cart against the held-back group leads, because it is the only
+        figure on this page that answers the objection a merchant will
+        actually raise: that a shopper who saw a card and bought would very
+        often have bought anyway. Settle rate, volume and dismissals qualify
+        it, so they sit beside it rather than competing as equal cards.
+      */}
+      <StatBand
+        label="Added to cart"
+        info={{
+          label: "Counted how",
+          body: "Add-to-cart among shoppers who saw a card, against the shoppers Cue was deliberately held back from. Every other figure on this page describes what Cue did; only this one describes what changed because of it.",
+        }}
+        value={formatShare(ARMS.addedToCartNudged)}
+        change={{
+          value: formatShare(
+            ARMS.addedToCartNudged / ARMS.addedToCartHoldout - 1,
+          ),
+          direction: "up",
+          comparison: "against holdout",
+        }}
+        caption={`${formatShare(ARMS.addedToCartHoldout)} among the shoppers Cue was held back from`}
+        stats={[
+          {
+            label: "Questions settled",
+            value: pct(totalResolved, NUDGE_TOTALS.shown),
+          },
+          {
+            label: "Times Cue spoke",
+            value: NUDGE_TOTALS.shown.toLocaleString(),
+          },
+          {
+            label: "Held back",
+            value: pct(
+              SUPPRESSION_TOTAL,
+              SUPPRESSION_TOTAL + NUDGE_TOTALS.shown,
             ),
-            direction: "up",
-            comparison: "against holdout",
-          }}
-          hint={`${formatShare(ARMS.addedToCartHoldout)} among the shoppers Cue was held back from. The per-question split is below.`}
-        />
-        <MetricCard
-          label="Questions settled"
-          value={pct(totalResolved, NUDGE_TOTALS.shown)}
-          hint={`In ${totalResolved.toLocaleString()} of ${NUDGE_TOTALS.shown.toLocaleString()} answers, the behaviour that triggered it stopped afterwards.`}
-        />
-        <MetricCard
-          label="How often Cue held back"
-          value={pct(SUPPRESSION_TOTAL, SUPPRESSION_TOTAL + NUDGE_TOTALS.shown)}
-          hint={`It held back ${SUPPRESSION_TOTAL.toLocaleString()} times. Every one is logged with a reason.`}
-        />
-        <MetricCard
-          label="Dismissed by the shopper"
-          value={pct(NUDGE_TOTALS.dismissed, NUDGE_TOTALS.shown)}
-          lowerIsBetter
-          hint={`${NUDGE_TOTALS.dismissed.toLocaleString()} were dismissed outright. Rising means Cue is interrupting.`}
-        />
-      </div>
+          },
+          {
+            label: "Dismissed",
+            value: pct(NUDGE_TOTALS.dismissed, NUDGE_TOTALS.shown),
+          },
+        ]}
+      />
 
       {/*
         Ranked by what settling each question is worth, not by a fixed
